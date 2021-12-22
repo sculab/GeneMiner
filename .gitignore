@@ -5,3 +5,4 @@ lib/makeblastdb
 lib/muscle3
 build/*
 dist/*
+setup.py
