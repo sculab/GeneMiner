@@ -495,13 +495,14 @@ def geneminer_GUI():
         [sg.Image(icon_48),
         sg.Text('GeneMiner', justification="left", font=("Arial", 24, "bold"))
         ],
-        [sg.T('Authors: Feng Tu, Yu Yan', font=("Arial", 12)),
-         sg.T('Email: 58689136@qq.com; yyu@scu.edu.cn', font=("Arial", 12))],
+        [sg.T('Authors: Xie Pulin, Guo Yongling, Zhang Zhen, Yu Yan', font=("Arial", 12)),
+         sg.T('Email: xiepulin@stu.scu.edu.cn', font=("Arial", 12))],
         [sg.Pane([sg.Column(left_col, element_justification='l', expand_x=True, expand_y=True),
                   sg.Column(right_col, element_justification='c', expand_x=True, expand_y=True)], orientation='h',
                  relief=sg.RELIEF_SUNKEN, key='-PANE-')],
         [
-         sg.Text('Version 1.0b build 20181215',expand_x=True, justification="right", font=("Arial", 12)),
+         sg.T('Cite: xxx. 2021. paper name xxx . xxx (x):11-11', font=("Arial", 12)),
+         sg.Text('Version 1.0b build 20211215',expand_x=True, justification="right", font=("Arial", 12)),
          ],
         ]
     window = sg.Window('GeneMiner', layout, finalize=True, icon=icon, resizable=True, use_default_focus=False)
@@ -726,8 +727,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(usage="%(prog)s <-1 -2|-s|-12>  <-rn|rcp|-rmito|rt>  [options]",
                                      description="GeneMiner: a software for extracting phylogenetic markers from next generation sequencing data\n"
                                                  "Version: 1.0\n"
-                                                 "Copyright (C) 2018 TuFeng\n"
-                                                 "Please contact <58689136@qq.com> if you have any questions",
+                                                 "Copyright (C) 2021 Pulin Xie\n"
+                                                 "Please contact <xiepulin@stu.edu.scu.cn> if you have any questions",
 
                                      formatter_class=argparse.RawTextHelpFormatter,
                                      # help信息中会自动取消掉换行符和空格，argparse.RawTextHelpFormatter
