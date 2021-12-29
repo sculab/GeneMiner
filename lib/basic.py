@@ -9,7 +9,6 @@
 import sys
 import subprocess
 import os
-import logging
 from Bio import SeqIO
 from Bio import pairwise2
 from Bio.SeqRecord import  SeqRecord
@@ -20,7 +19,7 @@ import numpy as np
 import shutil
 import re
 import global_var as gv
-##################################################################
+################################################################
 ##################################################################
 '''
 流程部分
@@ -39,29 +38,42 @@ def signal_handler(signal, frame):
 判断文件是否为fasta格式
 '''
 def is_fasta(filename):
-    with open(filename, "r") as handle:
-        fasta = SeqIO.parse(handle, "fasta")
-        return any(fasta)  # any:如果都不是fasta 会提示false。但凡有一个是fasta,会提示True。
-        # 但每次都是对一个文件进行判定，所以功能得以实现
+    try:
+        with open(filename, "r") as handle:
+            fasta = SeqIO.parse(handle, "fasta")
+            flag=any(fasta)  # any:如果都不是fasta 会提示false。但凡有一个是fasta,会提示True。
+            # 但每次都是对一个文件进行判定，所以功能得以实现
+    except:
+        flag=False
+    return flag
+
 
 '''
 判断文件是否为Genbank格式
 '''
 def is_gb(filename):
-    with open(filename, "r") as handle:
-        fasta = SeqIO.parse(handle, "gb")
-        return any(fasta)
+    try:
+        with open(filename, "r") as handle:
+            fasta = SeqIO.parse(handle, "gb")
+            flag= any(fasta)
+    except:
+        flag=False
+    return flag
 
 
 '''
 判断文件是否是txt文本文件，布尔值
 '''
 def is_txt_file(file):
-    flag=1
-    suffix=os.path.splitext(file)[-1]
-    if suffix!=".txt":
+    try:
+        flag=1
+        suffix=os.path.splitext(file)[-1]
+        if suffix!=".txt":
+            flag=0
+    except:
         flag=0
     return flag
+
 
 
 
@@ -71,12 +83,6 @@ def is_txt_file(file):
 为了防止数据质量太差，导致某一步骤做不出来结果，无法接续运行
 为了提高程序程序鲁棒性，判断文件是否存在，如果不存在或者文件大小为0，认定为无效返回0  有效返回1 
 '''
-# def is_exist(file):
-#     if os.path.exists(file) == False or os.path.getsize(file) == 0:
-#         flag = 0
-#     else:
-#         flag = 1
-#     return flag
 
 def is_exist(file):
     if os.path.isfile(file):
@@ -120,7 +126,6 @@ def get_files(ref):
 def dir_make(out_dir):
     if os.path.exists(out_dir) and len(os.listdir(out_dir)) > 0:
         print("\nerror! {}：the folder has already existed,and there are files under the folder.".format(out_dir))
-        gv.set_value("my_gui_flag", 0)
         sys.exit()
     #针对于用户先创建文件夹，再使用
     elif os.path.exists(out_dir) and len(os.listdir(out_dir))==0:
@@ -132,7 +137,7 @@ def dir_make(out_dir):
 
 def  cutting_line(message=""):
     element = ["-"]
-    cutting_line_number = 80
+    cutting_line_number = 85
     element_all = element * cutting_line_number
     length = len(message)
     start = int((cutting_line_number - length) / 2)
@@ -155,7 +160,6 @@ def file_or_directory(ref):
         files = os.listdir(ref)
         if len(files) == 0:
             print("the input  reference genome folder is empty")
-            gv.set_value("my_gui_flag", 0)
             sys.exit()
         else:
             flag = 0
@@ -164,13 +168,11 @@ def file_or_directory(ref):
         size = os.path.getsize(ref)
         if size == 0:
             print("The input reference genome file is empty")
-            gv.set_value("my_gui_flag", 0)
             sys.exit()
         else:
             flag = 1
             # print("this is a file")
     else:
-        gv.set_value("my_gui_flag", 0)
         sys.exit()
     return flag
 
@@ -743,7 +745,7 @@ def getCommand(cmd_list,system):
 ############################################
 
 '''
-bootstrap_pipeline /callback_pipelin
+bootstrap_pipeline /iterative_pipelin
 '''
 
 ###########################################
@@ -772,9 +774,10 @@ def multiple_sequence_alignment(muscle_path,input,output,system):
 （4）最佳结果 （一致度最高且最长）
 '''
 class Get_the_best_result():
-    def __init__(self, configuration_information, seq_path, ref_path, output_raw, output_raw_best, output_options,
+    def __init__(self, configuration_information,out_dir_name, seq_path, ref_path, output_raw, output_raw_best, output_options,
                  output_no_trimmed, output_trimmed, gene_name, max_length, min_length, options):
         self.configuration_information = configuration_information
+        self.out_dir_name=out_dir_name
         self.seq_path = seq_path
         self.ref_path = ref_path
         self.gene_name = gene_name
@@ -803,7 +806,7 @@ class Get_the_best_result():
         self.GM_results = self.configuration_information["GM_results"]
         self.system = self.configuration_information["system"]
         self.whole_log = self.configuration_information["whole_log"]
-        self.whole_log_path = os.path.join(self.GM_results, self.whole_log)
+        self.whole_log_path = os.path.join(self.out_dir_name, self.whole_log)
         self.makeblastdb_path = self.configuration_information["makeblastdb_path"]
         self.blastn_path = self.configuration_information["blastn_path"]
         self.blastn_out = self.configuration_information["blastn_out"]
@@ -859,9 +862,10 @@ class Get_the_best_result():
         gapextend = 2
         number = 1
         threads = 1
-        cmd = "cd '{0}' && '{1}' -query '{2}' -out {3} -db {4}/index -outfmt 6  -reward {5} -penalty {6} -gapopen {7} -gapextend {8} -num_alignments {9} -num_threads  {10}  >/dev/null  2>&1".format(
+        blast_word_size=25
+        cmd = "cd '{0}' && '{1}' -query '{2}' -out {3} -db {4}/index -outfmt 6  -reward {5} -penalty {6} -gapopen {7} -gapextend {8} -num_alignments {9} -num_threads {10} -word_size {11}   >/dev/null  2>&1".format(
             assembled_path_father, blastn_path, seq_basename, blastn_result, index_db, reward, penalty, gapopen,
-            gapextend, number, threads)
+            gapextend, number, threads,blast_word_size)
         runCommand(cmd, system)
         # t2=time.time()
         # print(t2-t1)
@@ -1025,7 +1029,7 @@ class Get_the_best_result():
         GM_results_path_trimmed = self.output_trimmed
         options = self.options
         system = self.system
-        whole_log_path = self.whole_log
+        whole_log_path = self.whole_log_path
         gene_name = self.gene_name
 
         if m8_information == []:
@@ -1187,8 +1191,8 @@ class Get_the_best_result():
 
 
 
-class Simplified_pipeline_bootstrap_callback():
-    def __init__(self, configuration_information, type, gm_result,filter_reference,cut_align_reference, out_dir_name, sub_out_dir_name, thread_number, kmer,max_length,min_length,options):
+class Simplified_pipeline_bootstrap_iterative():
+    def __init__(self, configuration_information, type, gm_result,filter_reference,cut_align_reference, out_dir_name, sub_out_dir_name, thread_number, kmer,wordsize,max_length,min_length,options):
 
         self.configuration_information = configuration_information
         self.type = type
@@ -1199,6 +1203,7 @@ class Simplified_pipeline_bootstrap_callback():
         self.sub_out_dir_name = sub_out_dir_name  # 总文件目录下的一个目录
         self.thread_number = thread_number
         self.kmer = kmer
+        self.wordsize=wordsize
         self.max_length = max_length
         self.min_length = min_length
         self.options = options
@@ -1236,7 +1241,7 @@ class Simplified_pipeline_bootstrap_callback():
         # file  matk.fasta
 
         out_dir_name = self.out_dir_name  # 定位所有基因名，所有传参都是根据基因名
-        sub_out_dir_name = self.sub_out_dir_name  # bootstrap / callback
+        sub_out_dir_name = self.sub_out_dir_name  # bootstrap / iterative
         filtered_out = self.filtered_out  # 二级目录
         reference_database = self.reference_database
         type = str(self.type)  # tfa,tgb, cp ,target 中的某一种
@@ -1245,6 +1250,7 @@ class Simplified_pipeline_bootstrap_callback():
         whole_log=self.whole_log
         gene_name = self.gene_name  # ycf4
         reference_path = self.filter_reference
+        wordsize=self.wordsize
 
         filtered_out_path = os.path.join(out_dir_name, sub_out_dir_name,filtered_out)
         dir_make(filtered_out_path)
@@ -1260,7 +1266,7 @@ class Simplified_pipeline_bootstrap_callback():
             [out_dir_name, filter_software, filtered_out_path, data1_path, data2_path,reference_path,whole_log_path] = get_absolute_and_map_path(path_list, system)  # 如果为windows环境，会批量映射路径
 
             # print([out_dir_name, filter_software, filtered_out_path, data1_path, data2_path,reference_path,whole_log_path])
-            cmd = "cd '{0}' && '{1}' -1 '{2}' -2 '{3}' -r '{4}'  >/dev/null  2>&1".format(filtered_out_path,filter_software, data1_path,data2_path, reference_path)
+            cmd = "cd '{0}' && '{1}' -1 '{2}' -2 '{3}' -r '{4}' -k {5} >/dev/null  2>&1".format(filtered_out_path,filter_software, data1_path,data2_path, reference_path,wordsize)
             # print(cmd)
             runCommand(cmd, system)
             cmd = "cd '{0}' && cat {1} {2} > {3}".format(filtered_out_path, "Filtered_reads__R1.fastq",
@@ -1361,7 +1367,7 @@ class Simplified_pipeline_bootstrap_callback():
             cmd = "echo {0} >> '{1}'".format(message, whole_log_path)
             runCommand(cmd, system)
             return 0
-        GM_results_path = os.path.join(out_dir_name, sub_out_dir_name, GM_results)  # bootstrap或者callback下 GM_results的路径
+        GM_results_path = os.path.join(out_dir_name, sub_out_dir_name, GM_results)  # bootstrap或者iterative下 GM_results的路径
         dir_make(GM_results_path)
 
         GM_results_path_raw = os.path.join(GM_results_path, gene_name + "_raw.fasta")
@@ -1381,7 +1387,7 @@ class Simplified_pipeline_bootstrap_callback():
         # 确定方向
         # 切齐 双序列比对(局部最优解)
         # 得到最佳剪切结果
-        my_verify = Get_the_best_result(configuration_information, assembled_path, ref_path, GM_results_path_raw,
+        my_verify = Get_the_best_result(configuration_information,out_dir_name, assembled_path, ref_path, GM_results_path_raw,
                                         GM_results_path_raw_best, GM_results_path_options, GM_results_path_no_trimmed,
                                         GM_results_path_trimmed, gene_name, max_length, min_length, options)
         my_verify.my_makeblastdb_blastn()

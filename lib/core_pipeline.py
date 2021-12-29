@@ -46,12 +46,13 @@ from build_reference_database import *
 
 
 class Pipeline():
-    def __init__(self, configuration_information,type,out_dir_name,thread_number, kmer,max_length,min_length,options):
+    def __init__(self, configuration_information,type,out_dir_name,thread_number, kmer, wordsize, max_length,min_length,options):
 
         self.configuration_information=configuration_information
         self.type = type
         self.out_dir_name=out_dir_name
         self.thread_number = thread_number
+        self.wordsize=wordsize
         self.kmer = kmer
         self.max_length=max_length
         self.min_length=min_length
@@ -89,6 +90,7 @@ class Pipeline():
         gene_name = file.split(".fasta")[0] #ycf4
         system=self.system
         whole_log = self.whole_log
+        wordsize=self.wordsize   #filter 的kmer
 
 
         ref = file
@@ -106,8 +108,8 @@ class Pipeline():
             [path, filter_software, data1_path, data2_path, reference_path, whole_log_path] = get_absolute_and_map_path(path_list, system)  # 如果为windows环境，会批量映射路径
 
 
-            cmd = "cd '{0}' && '{1}' -1 '{2}' -2 '{3}' -r '{4}'  >/dev/null  2>&1".format(path,
-                  filter_software,data1_path,data2_path,reference_path)
+            cmd = "cd '{0}' && '{1}' -1 '{2}' -2 '{3}' -r '{4}' -k {5} >/dev/null  2>&1".format(path,
+                  filter_software,data1_path,data2_path,reference_path,wordsize)
             runCommand(cmd,system)
             cmd = "cd '{0}' && cat {1} {2} > {3}".format(path, "Filtered_reads__R1.fastq", "Filtered_reads__R2.fastq",
                                                        "filtered.fq")
@@ -279,7 +281,7 @@ class Pipeline():
         # 确定方向
         # 切齐 双序列比对(局部最优解)
         # 得到最佳剪切结果
-        my_verify=Get_the_best_result(configuration_information,assembled_path,ref_path,GM_results_path_raw, GM_results_path_raw_best,GM_results_path_options,GM_results_path_no_trimmed,GM_results_path_trimmed,gene_name,max_length,min_length,options)
+        my_verify=Get_the_best_result(configuration_information,out_dir_name,assembled_path,ref_path,GM_results_path_raw, GM_results_path_raw_best,GM_results_path_options,GM_results_path_no_trimmed,GM_results_path_trimmed,gene_name,max_length,min_length,options)
         my_verify.my_makeblastdb_blastn()
         m8_information=my_verify.parse_blastn_m8()  #解析blastn结果
         m8_information=my_verify.add_query_reference_information_2_m8(m8_information) #向m8_information里面增添参考序列和查询序列的信息

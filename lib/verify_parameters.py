@@ -50,23 +50,12 @@ def check_python_version():
         sys.exit()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 ##############################################################
 '''
 第一部分 检测各项参数是否正确,正确后打印参数
 (1)线程/进程数量的选择数量 -t
-(2)kmer 大小的检测 -k
+(2)kmer 大小的检测 -k  
+2.2wordsize 大小的检测       过滤的kmer
 (3)软边界大小检测 -b
 (4)检测基因max_length,min_length 
 (5)参考基因组格式是否对应  2.1 -rtfa fasta;  -rtgb/-rcp/-rmito genebank格式  2.2选择了哪些参考基因组  2.3参考基因组是否有重名文件
@@ -77,6 +66,7 @@ def check_python_version():
 (10)梯度逼近参数检验
 (11)输出文件夹检测
 (12)参考序列过滤策略 
+
 '''
 #############################################################
 
@@ -100,16 +90,16 @@ def check_threads_number(thread):
         if thread.isdigit():         #判断是否为纯数字
             thread = int(thread)
             if thread > thread_number_all:
-                print("Number of threads exceed the  maximum ")
+                print("Number of threads exceed the  maximum, please check the -t parameter")
                 gv.set_value("my_gui_flag", 0)
                 sys.exit()
             elif thread <= 0:
-                print("Number of threads shuold exceed  0")
+                print("Number of threads shuold exceed  0, please check the -t parameter")
             else:
                 thread_number = thread
 
         else:  #防止输入乱七八糟的东西
-            print("Check the -t parameter. The number of threads must be an integer greater than 0")
+            print("The number of threads must be an integer greater than 0, please check the -t parameter")
             gv.set_value("my_gui_flag", 0)
             sys.exit()
 
@@ -122,12 +112,27 @@ def check_kmer(kmer):
     if kmer==31:
         kmer=31
     elif kmer<=0 or kmer>=127:
-        print("Kmer sizes range from 15 to 127")
+        print("Kmer sizes range from 15 to 127, please check the -k parameter")
         gv.set_value("my_gui_flag", 0)
         sys.exit()
     else:
         kmer=kmer
     return  kmer
+
+'''
+2.2限定wordsize的大小[16，32]
+'''
+def check_wordsize(wordsize):
+    max=32
+    min=16
+    if wordsize<min or wordsize>max:
+        print("Wordsize should be between 16 and 32, please check the -w parameter")
+        gv.set_value("my_gui_flag", 0)
+        sys.exit()
+    else:
+        wordsize=wordsize
+    return wordsize
+
 
 
 '''
@@ -139,7 +144,7 @@ def check_soft_boundary(soft_boundary):
     min = 0
     if soft_boundary > max or soft_boundary < min:
         print(
-            "The length of the soft boundary is limited to 0 to 200, and the recommended length is 0.5 * reads_length")
+            "The length of the soft boundary is limited to 0 to 200, and the recommended length is 0.5 * reads_length, please check the -b parameter")
         gv.set_value("my_gui_flag", 0)
         sys.exit()
     else:
@@ -151,17 +156,17 @@ def check_soft_boundary(soft_boundary):
 '''
 def check_max_min_length(max_length,min_length):
     if max_length<= min_length:
-        print("The maximum gene length should be greater than the minimum gene length")
+        print("The maximum gene length should be greater than the minimum gene length, please check the -max parameter ")
         gv.set_value("my_gui_flag", 0)
         sys.exit()
 
     if max_length<=0:
-        print("The maximum gene length should be greater than zero")
+        print("The maximum gene length should be greater than zero, please check the -max parameter")
         gv.set_value("my_gui_flag", 0)
         sys.exit()
 
     if min_length < 0:
-        print("The minimum gene length should not be less than zero")
+        print("The minimum gene length should not be less than zero, please check the -min parameter")
         gv.set_value("my_gui_flag", 0)
         sys.exit()
 
@@ -239,7 +244,7 @@ def check_ref_format(target_reference_fa, target_reference_gb,cp_reference, mito
                     flag = flag + 1
 
             if flag != 0:
-                print("references should be in GenBank-format,please check -rtgb parameter")
+                print("references should be in GenBank-format, please check -rtgb parameter")
                 Nonconforming_file = [os.path.basename(file) for file in Nonconforming_file]
                 if len(Nonconforming_file) == 1:
                     Nonconforming_file = "".join(Nonconforming_file)
@@ -264,7 +269,7 @@ def check_ref_format(target_reference_fa, target_reference_gb,cp_reference, mito
         if flag == 1:
             answer = is_gb(target_reference_gb)
             if answer == False:
-                print("references should be in GenBank-format,please check -rtgb parameter")
+                print("references should be in GenBank-format, please check -rtgb parameter")
                 print("{0} is not in GenBank-format".format(target_reference_gb))
                 gv.set_value("my_gui_flag", 0)
                 sys.exit()
@@ -282,7 +287,7 @@ def check_ref_format(target_reference_fa, target_reference_gb,cp_reference, mito
                     flag = flag + 1
 
             if flag != 0:
-                print("cp_reference should be in GenBank-format,please check -rcp parameter")
+                print("cp_reference should be in GenBank-format, please check -rcp parameter")
                 Nonconforming_file = [os.path.basename(file) for file in Nonconforming_file]
                 if len(Nonconforming_file) == 1:
                     Nonconforming_file = "".join(Nonconforming_file)
@@ -307,7 +312,7 @@ def check_ref_format(target_reference_fa, target_reference_gb,cp_reference, mito
         if flag == 1:
             answer = is_gb(cp_reference)
             if answer == False:
-                print("cp_reference should be in GenBank-format,please check -rcp parameter")
+                print("cp_reference should be in GenBank-format, please check -rcp parameter")
                 print("{0} is not in  GenBank-format".format(cp_reference))
                 gv.set_value("my_gui_flag", 0)
                 sys.exit()
@@ -325,7 +330,7 @@ def check_ref_format(target_reference_fa, target_reference_gb,cp_reference, mito
                     flag = flag + 1
 
             if flag != 0:
-                print("mito_references should be in GenBank-format,please check -rmito parameter")
+                print("mito_references should be in GenBank-format, please check -rmito parameter")
                 Nonconforming_file = [os.path.basename(file) for file in Nonconforming_file]
                 if len(Nonconforming_file) == 1:
                     Nonconforming_file = "".join(Nonconforming_file)
@@ -350,7 +355,7 @@ def check_ref_format(target_reference_fa, target_reference_gb,cp_reference, mito
         if flag == 1:
             answer = is_gb(mito_reference)
             if answer == False:
-                print("mito_references should be in GenBank-format,please check -rmito parameter")
+                print("mito_references should be in GenBank-format, please check -rmito parameter")
                 print("{0} is not in  GenBank-format".format(mito_reference))
                 gv.set_value("my_gui_flag", 0)
                 sys.exit()
@@ -374,7 +379,7 @@ def check_datasize(data_size):
         data_size=int(data_size)
         if data_size < min_data_size:
             print(
-                "please check -n parameter. for better results, input data should not be less than {0} lines.".format(
+                "Please check -n parameter. for better results, input data should not be less than {0} lines.".format(
                     min_data_size))
             gv.set_value("my_gui_flag", 0)
             sys.exit()
@@ -382,7 +387,7 @@ def check_datasize(data_size):
             ultimate_data_size = data_size - data_size % 100000  # 10w起步，保证是4的倍数
         return ultimate_data_size
     else:
-        print("please check -n parameter,it must be an integer greater than {} or 'all' ".format(min_data_size))
+        print("Please check -n parameter, it must be an integer greater than {} or 'all' ".format(min_data_size))
         gv.set_value("my_gui_flag", 0)
         sys.exit()
 
@@ -397,7 +402,7 @@ def check_raw_data_type(data1, data2, paired, single):
     data1, data2, paired, single 必须真实存在
     '''
     if (data1 == None or data2 == None) and paired == None and single == None:
-        print("Select one of the parameters from [-1 -2], [-s] and  [-12]")
+        print("Please select one of the parameters from [-1 -2], [-s] and  [-12]")
         gv.set_value("my_gui_flag", 0)
         sys.exit()
     if (data1 == None and data2 != None) or (data1 != None and data2 == None):
@@ -503,7 +508,7 @@ def check_whole_task(target_reference_fa, target_reference_gb, cp_reference, mit
     task_pool = []  # 任务池
     task_pool_exist = []  # 任务是否存在的池子
     if target_reference_fa == None and target_reference_gb == None and cp_reference == None and mito_reference == None:
-        print("Select at least one of the parameters -rtfa,rtgb,-rcp,-rmito")
+        print("Please select at least one from -rtfa, -rtgb, -rcp and -rmito")
         gv.set_value("my_gui_flag", 0)
         sys.exit()
     if target_reference_fa != None:
@@ -551,7 +556,7 @@ def check_bootstrap_parameter(bootstrap_number):
 
     else:
         if  bootstrap_number <= 0:
-            print("Please check the bootstrap_number parameter ,The number must be greater than 0")
+            print("The number must be greater than 0, please check the -bn parameter")
             gv.set_value("my_gui_flag", 0)
             sys.exit()
         else:
@@ -565,23 +570,23 @@ def check_bootstrap_parameter(bootstrap_number):
 '''
 10.检测梯度逼近参数
 '''
-def check_callback_parameter(callback_number):
-    if callback_number==None or callback_number=="None":
+def check_iterative_parameter(iterative_number):
+    if iterative_number==None or iterative_number=="None":
         flag = "No"
-        callback_number = "None"
-        callback_information = [flag, callback_number]
+        iterative_number = "None"
+        iterative_information = [flag, iterative_number]
 
     else:
-        if  callback_number <= 0:
-            print("Please check the bootstrap_number parameter ,the number must be greater than 0")
+        if  iterative_number <= 0:
+            print("The number must be greater than 0, please check the -in parameter")
             gv.set_value("my_gui_flag", 0)
             sys.exit()
         else:
             flag = "Yes"
-            callback_number = callback_number
-            callback_information = [flag, callback_number]
+            iterative_number = iterative_number
+            iterative_information = [flag, iterative_number]
 
-    return callback_information
+    return iterative_information
 
 
 
@@ -598,8 +603,8 @@ windows下额外的输出文件夹检测
 def check_out_dir_GUI(out,system):
     if system=="windows":
         #pysimplegui 会把输入数据转换为str格式
-        if out=='' or out=="auto":
-            print("Please specify an output folder")
+        if out=='' or out=="auto"  or out==None:  #out==None 针对图形界面用户reset之后，out_dir忘记输入的情况
+            print("You should specify an output folder, please check the -o parameter")
             gv.set_value("my_gui_flag", 0)
             sys.exit()
 
@@ -614,7 +619,7 @@ def check_out_dir(out):
             if len(os.listdir(out))==0:  #文件夹存在但里面为空是能够使用的
                 out_dir_name=out
             else:
-                print("{} already exists and there are files under the folder,please check -o parameter".format(out))
+                print("{} already exists and there are files under the folder, please check the -o parameter".format(out))
                 gv.set_value("my_gui_flag", 0)
                 sys.exit(0)
         else:
@@ -634,34 +639,34 @@ def check_out_dir(out):
 '''
 两类数据，一类是txt，一类是s1,s2,s3,s4,s5
 '''
-def check_reference_filtering_strategy(rf):
+def check_reference_filtering_strategy(sf):
     choose_data=["s1","s2","s3","s4","s5"]
-    if rf ==None:
-        rf="s1"
-        return rf
+    if sf ==None:
+        sf= "s1"
+        return sf
 
-    file_flag = os.path.isfile(rf)
+    file_flag = os.path.isfile(sf)
     if file_flag==True:
-        flag=is_txt_file(rf)
+        flag=is_txt_file(sf)
         if flag==0:
-            message = "Please check the -rf parameter, you can choose one from ['s1', 's2', 's3', 's4', 's5'] or specify a plain text file with 'txt' as the suffix "
+            message = "You can choose one from ['s1', 's2', 's3', 's4', 's5'] or specify a plain text file with 'txt' as the suffix, please check the -sf parameter"
             print(message, flush=True)
             gv.set_value("my_gui_flag", 0)
             sys.exit()
         else:
-            rf=rf
+            sf=sf
 
     elif file_flag==False:
-        if rf in choose_data:
-            rf=rf
+        if sf in choose_data:
+            sf=sf
         else:
-            message = "Please check the -rf parameter, you can choose one from ['s1', 's2', 's3', 's4', 's5'] or specify a plain text file with 'txt' as the suffix "
+            message = "You can choose one from ['s1', 's2', 's3', 's4', 's5'] or specify a plain text file with 'txt' as the suffix， please check the -sf parameter "
             print(message, flush=True)
             gv.set_value("my_gui_flag", 0)
             sys.exit()
     else:
         pass
-    return  rf
+    return  sf
 
 
 
@@ -691,21 +696,22 @@ def print_parameter_information(parameter_information_dict):
             temp[key] = value
     message_all = []
     for key, value in temp.items():
-        message = "{0:<20}:{1:<}".format(key, value) #左对齐 18位宽  target_reference最长 16位宽
+        message = "{0:<22}:{1:<}".format(key, value) #左对齐 22位宽  target_reference最长 16位宽
         message_all.append(message)
 
     symbol="-"
     print(symbol*22,flush=True)
     header="GeneMiner: a software for extracting phylogenetic markers from next generation sequencing data\n" \
            "Version: 1.0\n" \
-           "Copyright (C) 2018 Fengtu\n" \
-           "Please contact <58689316@qq.com>, if you have any questions"
+           "Copyright (C) 2021 Pulin Xie\n" \
+           "Please contact <xiepulin@stu.edu.scu.cn>, if you have any bugs or questions"
 
     print(header,flush=True)
     for i in message_all:
+        # i=i.replace("_"," ")
+        i=i.capitalize()#首字母大写
         print(i, flush=True)
     print(symbol * 22, flush=True)
-
 
 
 

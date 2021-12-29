@@ -11,8 +11,6 @@ import sys
 import subprocess
 import datetime
 import os
-import logging
-import traceback
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from tqdm import tqdm
@@ -191,13 +189,13 @@ class Bootstrap_verify():
 
         total = len(task_pool)
         number = 1
-        sys.stdout.write('\r' + "{0:<18}:{1:>4}/{2}".format("Preparing_data", number, total))
+        sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Preparing_data", number, total))
         for task in futures.as_completed(task_pool):
             if number < total:
-                sys.stdout.write('\r' + "{0:<18}:{1:>4}/{2}".format("Preparing_data",number, total))
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Preparing_data",number, total))
                 sys.stdout.flush()
             else:
-                sys.stdout.write('\r' + "{0:<18}:{1:>4}/{2}".format("Preparing_data", number, total)+"\n")
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Preparing_data", number, total)+"\n")
                 sys.stdout.flush()
             result.append(task.result())
             number = number + 1
@@ -280,13 +278,13 @@ class Bootstrap_verify():
             task_pool.append(executor.submit(self.wrap_filter_reads, file))
         total = len(task_pool)
         number = 1
-        sys.stdout.write('\r' + "{0:<18}:{1:>4}/{2}".format("Filtering_reads", number, total)) #直接打印，防止第一个运行太久，否则第一个完成才会打印出来
+        sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Filtering_reads", number, total)) #直接打印，防止第一个运行太久，否则第一个完成才会打印出来
         for task in futures.as_completed(task_pool):
             if number < total:
-                sys.stdout.write('\r' + "{0:<18}:{1:>4}/{2}".format("Filtering_reads", number, total))
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Filtering_reads", number, total))
                 sys.stdout.flush()
             else:
-                sys.stdout.write('\r' + "{0:<18}:{1:>4}/{2}".format("Filtering_reads", number, total) + "\n")
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Filtering_reads", number, total) + "\n")
                 sys.stdout.flush()
             result.append(task.result())
             number = number + 1
@@ -377,13 +375,13 @@ class Bootstrap_verify():
 
         total = len(task_pool)
         number = 1
-        sys.stdout.write('\r' + "{0:<18}:{1:>4}/{2}".format("Assembling_reads", number, total))
+        sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Assembling_reads", number, total))
         for task in futures.as_completed(task_pool):
             if number < total:
-                sys.stdout.write('\r' + "{0:<18}:{1:>4}/{2}".format("Assembling_reads", number, total))
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Assembling_reads", number, total))
                 sys.stdout.flush()
             else:
-                sys.stdout.write('\r' + "{0:<18}:{1:>4}/{2}".format("Assembling_reads", number, total) + "\n")
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Assembling_reads", number, total) + "\n")
                 sys.stdout.flush()
             result.append(task.result())
             number = number + 1
@@ -442,7 +440,7 @@ class Bootstrap_verify():
         GM_results_path_no_trimmed = os.path.join(GM_results_path, gene_name + ".fasta")
         GM_results_path_trimmed = os.path.join(GM_results_path,gene_name + "_trimmed.fasta")
 
-        my_verify = Get_the_best_result(configuration_information,assembled_out_path, ref_path,GM_results_path_raw,
+        my_verify = Get_the_best_result(configuration_information,out_dir_name,assembled_out_path, ref_path,GM_results_path_raw,
                                         GM_results_path_raw_best, GM_results_path_options, GM_results_path_no_trimmed,
                                         GM_results_path_trimmed, gene_name, max_length, min_length, options)
 
@@ -484,13 +482,13 @@ class Bootstrap_verify():
 
         total = len(task_pool)
         number = 1
-        sys.stdout.write('\r' + "{0:<18}:{1:>4}/{2}".format("Verifying_contigs", number, total))
+        sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Verifying_contigs", number, total))
         for task in futures.as_completed(task_pool):
             if number < total:
-                sys.stdout.write('\r' + "{0:<18}:{1:>4}/{2}".format("Verifying_contigs", number, total))
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Verifying_contigs", number, total))
                 sys.stdout.flush()
             else:
-                sys.stdout.write('\r' + "{0:<18}:{1:>4}/{2}".format("Verifying_contigs", number, total) + "\n")
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Verifying_contigs", number, total) + "\n")
                 sys.stdout.flush()
 
             results.append(task.result())   #没有return返回None 有的话返回函数的return值
@@ -929,7 +927,7 @@ class Bootstrap_pipeline():
             my_bootstrap=Bootstrap_verify(configuration_information,type, out_dir,gm_results_list[i],ref[i],thread_number, kmer, bootstrap_number,max_length,min_length,options)
 
             index=index+1
-            message="{0:<18}:{1:>4}/{2}".format("Bootstrap",index,task_number)
+            message="{0:<22}:{1:>4}/{2}".format("Bootstrap",index,task_number)
             print(message,flush=True)
 
             my_bootstrap.random_replacement_parallel()

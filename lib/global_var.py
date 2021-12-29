@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# @Time    : 2021/12/17 16:58
+# @Author  : xiepulin
+# @File    : global_var.py
+# @Software: PyCharm
+
+
+
+
+
+
+
+
 def _init_():#初始化
     global _global_dict
     _global_dict = {}
