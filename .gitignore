@@ -3,6 +3,7 @@ lib/minia
 lib/filter
 lib/makeblastdb
 lib/muscle3
+lib/__pycache__
 build/*
 dist/*
 setup.py
