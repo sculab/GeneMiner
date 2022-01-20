@@ -58,7 +58,6 @@ from lib.pack_results import pack_the_results
 gv._init_()#在basic 中已经申明过了
 
 def get_filter_assemble_software_path():
-
     cur_path = os.path.realpath(sys.argv[0])  # 脚本当前路径
     cur_path = os.path.dirname(cur_path)  # 脚本的父目录,father_path 覆盖
 
@@ -580,7 +579,11 @@ def geneminer_GUI():
             if values["-rmito-"]:
                 args.mito_reference = values["-rmito-"]
             if values["-o-"]:
+                if not os.path.exists(values["-o-"]):
+                    os.makedirs(values["-o-"])
                 args.out = values["-o-"]
+            else:
+                sg.popup("You must specify an output folder!")
 
             #高级参数部分
             if values["-k-"]:
@@ -801,19 +804,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # main(args)
     geneminer_GUI()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
