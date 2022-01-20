@@ -584,6 +584,7 @@ def geneminer_GUI():
                 args.out = values["-o-"]
             else:
                 sg.popup("You must specify an output folder!")
+                continue
 
             #高级参数部分
             if values["-k-"]:
