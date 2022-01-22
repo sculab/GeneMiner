@@ -346,28 +346,28 @@ def geneminer_GUI():
         [sg.Text('Data1:', size=(12, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-1-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip='One end of the paired-end reads, support fastq/fastq.gz/fastq.bz2',
-                  readonly=True),
+                  readonly=False),
          sg.FileBrowse("File", font=("Arial", 12),target='-1-',file_types=(("-1","*.fq"),("-1","*.fastq"),("-1","*.fq.gz"),("-1","*.fastq.gz"),("-1","*.fq.bz2"),("-1","*.fastq.bz2"),("-1","*.Fq")) )],
 
         #-2
         [sg.Text('Data2:', size=(12, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-2-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip="Another end of the  paired-end reads, support fastq/fastq.gz/fastq.bz2",
-                  readonly=True),
+                  readonly=False),
          sg.FileBrowse("File", font=("Arial", 12),target='-2-',file_types=(("-2","*.fq"),("-2","*.fastq"),("-2","*.fq.gz"),("-2","*.fastq.gz"),("-2","*.fq.bz2"),("-2","*.fastq.bz2")) )],
 
         #-Paired -12
         [sg.Text('Paired reads:', size=(12, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-12-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip='Paired-end reads,support fastq/fastq.gz/fastq.bz2',
-                  readonly=True),
+                  readonly=False),
          sg.FileBrowse("File", font=("Arial", 12),target='-12-',file_types=(("-12","*.fq"),("-12","*.fastq"),("-12","*.fq.gz"),("-12","*.fastq.gz"),("-12","*.fq.bz2"),("-12","*.fastq.bz2"))  )],
 
         #-Single -s
         [sg.Text('Single reads:', size=(12, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-s-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip="Single-reads, support fastq/fastq.gz/fastq.bz2",
-                  readonly=True),
+                  readonly=False),
          sg.FileBrowse("File", font=("Arial", 12), target='-s-',file_types=(("-s","*.fq"),("-s","*.fastq"),("-s","*.fq.gz"),("-s","*.fastq.gz"),("-s","*.fq.bz2"),("-s","*.fastq.bz2")) )],
 
 
@@ -375,34 +375,34 @@ def geneminer_GUI():
         [sg.Text('Ref (fasta):', size=(12, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-rtfa-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip="Reference sequences, only support fasta format",
-                  readonly=True),
+                  readonly=False),
          sg.FileBrowse("File", font=("Arial", 12),target='-rtfa-',file_types=(("rtfa","*.fasta"),("rtfa","*.fa"),("rtfa","*.fas"),("rtfa","*.FASTA"),("rtfa","*.FAS"),("rtfa","*.FA")) ), sg.FolderBrowse("Folder", font=("Arial", 12), target='-rtfa-')],
 
         #-rtgb
         [sg.Text('Ref (gb):', size=(12, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-rtgb-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip="Reference sequences,only support GenBank format",
-                  readonly=True),
+                  readonly=False),
          sg.FileBrowse("File", font=("Arial", 12), target='-rtgb-',file_types=(("rtgb","*.gb"),) ), sg.FolderBrowse("Folder", font=("Arial", 12), target='-rtgb-')],
 
         #-rcp
         [sg.Text('Chlo genome:', size=(12, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-rcp-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip="Chloroplast reference genome, only support GenBank format",
-                  readonly=True),
+                  readonly=False),
          sg.FileBrowse("File", font=("Arial", 12), target='-rcp-',file_types=(("rcp","*.gb"),)   ), sg.FolderBrowse("Folder", font=("Arial", 12), target='-rcp-')],
 
         #rmito
         [sg.Text('Mito genome:', size=(12, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-rmito-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip="Mitochondrial reference genome, only support GenBank format",
-                  readonly=True),
+                  readonly=False),
          sg.FileBrowse("File", font=("Arial", 12),target='-rmito-',file_types=(("rmito","*.gb"),) ), sg.FolderBrowse("Folder", font=("Arial", 12), target='-rmito-')],
 
         #-OUT -o
         [sg.Text('Output Folder:', size=(12, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-o-', size=(20, 1), font=("Arial", 12), expand_x=True,
-                  tooltip="Specify the result folder ",readonly=True),
+                  tooltip="Specify the result folder ",readonly=False),
          sg.FolderBrowse("Folder", font=("Arial", 12),target="-o-")],
 
         ################################## 高级设定
@@ -563,38 +563,62 @@ def geneminer_GUI():
         if event == 'Run' and gv.get_value("my_gui_flag")  == 0:        #1代表运行 0代表运行结束。
             #基本参数部分
             if values["-1-"]:
-                args.data1= values["-1-"]
+                args.data1 = values["-1-"]
+            else:
+                args.data1 = ""
             if values["-2-"]:
                 args.data2 = values["-2-"]
+            else:
+                args.data2 = ""
             if values["-12-"]:
                 args.paired = values["-12-"]
+            else:
+                args.paired = ""
             if values["-s-"]:
                 args.single = values["-s-"]
+            else:
+                args.single = ""
             if values["-rtfa-"]:
                 args.target_reference_fa = values["-rtfa-"]
+            else:
+                args.target_reference_fa = ""
             if values["-rtgb-"]:
                 args.target_reference_gb = values["-rtgb-"]
+            else:
+                args.target_reference_gb = ""
             if values["-rcp-"]:
                 args.cp_reference = values["-rcp-"]
+            else:
+                args.cp_reference = ""
             if values["-rmito-"]:
                 args.mito_reference = values["-rmito-"]
+            else:
+                args.mito_reference = ""
             if values["-o-"]:
                 if not os.path.exists(values["-o-"]):
                     os.makedirs(values["-o-"])
                 args.out = values["-o-"]
             else:
-                sg.popup("You must specify an output folder!")
+                sg.Popup("You must specify an output folder!", title='Info' ,keep_on_top=True, font=("Arial", 12))
                 continue
 
             #高级参数部分
             if values["-k-"]:
                 args.kmer = int(values["-k-"])
+            else:
+                args.kmer = 31
             if values["-w-"]:
                 args.wordsize = int(values["-w-"])
+            else:
+                args.wordsize = 16
             if values["-min-"]:
                 args.min = int(values["-min-"])
+            else:
+                args.min = 300
             if values["-max-"]:
                 args.max = int(values["-max-"])
+            else:
+                args.max = 5000
             if values["-b-"]:
                 args.soft_boundary = int(values["-b-"])
             if values["-n-"]:
@@ -602,18 +626,20 @@ def geneminer_GUI():
                     args.number = "all"
                 elif values["-n-"].isdigit():
                     args.number = int(values["-n-"])
-
+            else:
+                args.number = 10000000
             if values["-t-"]:
                 if values["-t-"].upper() == "AUTO":
                     args.thread = "auto"
                 elif values["-t-"].isdigit():
                     args.thread = int(values["-t-"])
-
+            else:
+                args.thread = "auto"
 
             if values["-sf-"]:
                 args.reference_filtering=values["-sf-"]
-
-
+            else:
+                args.reference_filtering = 's1'
 
             #自展检测部分
             if values["-cbbn-"]:
@@ -675,7 +701,7 @@ def geneminer_GUI():
             args.mito_reference = None
             args.out = None
             args.kmer = 31
-            args.wordsize = 31
+            args.wordsize = 16
             args.min = 300
             args.max = 5000
             args.soft_boundary = 75
