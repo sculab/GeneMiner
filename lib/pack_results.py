@@ -12,7 +12,7 @@ from basic import dir_make,cutting_line
 
 
 def pack_the_results(type,configuration,out_dir_name,bootstrap_number,iterative_number):
-    message="Packing_results...."
+    message="Packing results...."
     print(message,end="",flush=True)
     out_dir_name=out_dir_name
     reference_database=configuration["reference_database"]

@@ -189,13 +189,13 @@ class Bootstrap_verify():
 
         total = len(task_pool)
         number = 1
-        sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Preparing_data", number, total))
+        sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Preparing data", number, total))
         for task in futures.as_completed(task_pool):
             if number < total:
-                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Preparing_data",number, total))
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Preparing data",number, total))
                 sys.stdout.flush()
             else:
-                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Preparing_data", number, total)+"\n")
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Preparing data", number, total)+"\n")
                 sys.stdout.flush()
             result.append(task.result())
             number = number + 1
@@ -278,13 +278,13 @@ class Bootstrap_verify():
             task_pool.append(executor.submit(self.wrap_filter_reads, file))
         total = len(task_pool)
         number = 1
-        sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Filtering_reads", number, total)) #直接打印，防止第一个运行太久，否则第一个完成才会打印出来
+        sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Filtering reads", number, total)) #直接打印，防止第一个运行太久，否则第一个完成才会打印出来
         for task in futures.as_completed(task_pool):
             if number < total:
-                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Filtering_reads", number, total))
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Filtering reads", number, total))
                 sys.stdout.flush()
             else:
-                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Filtering_reads", number, total) + "\n")
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Filtering reads", number, total) + "\n")
                 sys.stdout.flush()
             result.append(task.result())
             number = number + 1
@@ -375,19 +375,19 @@ class Bootstrap_verify():
 
         total = len(task_pool)
         number = 1
-        sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Assembling_reads", number, total))
+        sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Assembling reads", number, total))
         for task in futures.as_completed(task_pool):
             if number < total:
-                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Assembling_reads", number, total))
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Assembling reads", number, total))
                 sys.stdout.flush()
             else:
-                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Assembling_reads", number, total) + "\n")
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Assembling reads", number, total) + "\n")
                 sys.stdout.flush()
             result.append(task.result())
             number = number + 1
         executor.shutdown()  # 所有线程结束，再进行下一步
 
-        # for task in tqdm(desc="{0:<20}".format("Assembling_reads"), iterable=futures.as_completed(task_pool),
+        # for task in tqdm(desc="{0:<20}".format("Assembling reads"), iterable=futures.as_completed(task_pool),
         #                  total=len(task_pool)):
         #     result.append(task.result())
 
@@ -482,13 +482,13 @@ class Bootstrap_verify():
 
         total = len(task_pool)
         number = 1
-        sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Verifying_contigs", number, total))
+        sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Verifying contigs", number, total))
         for task in futures.as_completed(task_pool):
             if number < total:
-                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Verifying_contigs", number, total))
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Verifying contigs", number, total))
                 sys.stdout.flush()
             else:
-                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Verifying_contigs", number, total) + "\n")
+                sys.stdout.write('\r' + "{0:<22}:{1:>4}/{2}".format("Verifying contigs", number, total) + "\n")
                 sys.stdout.flush()
 
             results.append(task.result())   #没有return返回None 有的话返回函数的return值

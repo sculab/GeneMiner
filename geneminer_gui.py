@@ -402,36 +402,62 @@ def geneminer_GUI():
                   tooltip="Specify the result folder ", readonly=False, background_color='#BAD9BC'),
          sg.FolderBrowse("Folder", font=("Arial", 12), target="-o-")]]
     filter_frame = [[sg.Text('Rows:', size=(11, 1), justification='right', font=("Arial", 12)),
-                     sg.Input("10000000", key='-n-', size=(11, 1), font=("Arial", 12), expand_x=False,
+                     sg.Input("10000000", key='-n-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
                               tooltip="The number of rows of raw data from NGS data.\nSet to 'all' if you want to use all the data."),
                      # -wordsize -kmer
                      sg.Text('Word-size:', size=(8, 1),
                              justification='right', font=("Arial", 12)),
-                     sg.Input(16, key='-w-', size=(11, 1), font=("Arial", 12), expand_x=False,
+                     sg.Input(16, key='-w-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
                               tooltip="The length of a word-size  [default=16]")]]
     assemble_frame = [[sg.Text('K-mer:', size=(11, 1), justification='right', font=("Arial", 12)),
-                       sg.Input(31, key='-k-', size=(11, 1), font=("Arial", 12), expand_x=False,
+                       sg.Input(31, key='-k-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
                                 tooltip="The size of a k-mer [default=31]"),
                        # Boundaty threads
                        sg.Text('Boundary:', size=(8, 1),
                                justification='right', font=("Arial", 12)),
-                       sg.Input(75, key='-b-', size=(11, 1), font=("Arial", 12), expand_x=False,
+                       sg.Input(75, key='-b-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
                                 tooltip="Extend the length to both sides of the gene while extracting genes from Genbank file [default=75]")],
                       # min max
                       [sg.Text('Min:', size=(11, 1), justification='right', font=("Arial", 12)),
-                       sg.Input(300, key='-min-', size=(11, 1), font=("Arial", 12), expand_x=False,
+                       sg.Input(300, key='-min-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
                                 tooltip="The minimum length of a gene  [default=300]"),
                        sg.Text('Max:', size=(8, 1),
                                justification='right', font=("Arial", 12)),
-                       sg.Input(5000, key='-max-', size=(11, 1), font=("Arial", 12), expand_x=False,
+                       sg.Input(5000, key='-max-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
                                 tooltip="The maximum length of a gene [default=5000]"),
                        ],
 
 
                       [sg.Text('Threads:', size=(11, 1), justification='right', font=("Arial", 12)),
-                       sg.Input("auto", key='-t-', size=(11, 1), font=("Arial", 12), expand_x=False,
+                       sg.Input("auto", key='-t-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
                                 tooltip="Specify the number of threads you want to run [default=auto]"),
                        ]]
+    verify_frame = [
+        [sg.Text('Iterative:', size=(12, 1), justification='right', font=("Arial", 12)),
+         sg.Input(2, key='-in-', size=(5, 1), font=("Arial", 12), expand_x=False, readonly=False, background_color = '#BFE9FF',
+                  tooltip="Specify the number of iterative loop to filter reads correctly around indels"),
+         sg.CB(' ', font=("Arial", 12), size=(3, 1),
+               key='-cbin-', enable_events=True),
+
+
+         sg.Text('Bootstrap:', size=(8, 1),
+                 justification='right', font=("Arial", 12)),
+         sg.Input(10, key='-bn-', size=(6, 1), font=("Arial", 12), expand_x=False, readonly=False, background_color = '#BFE9FF',
+                  tooltip="Specify the bootstrap number. Evaluate the results based on the bootstrap method"),
+         sg.CB(' ', font=("Arial", 12), size=(3, 1),
+               key='-cbbn-', enable_events=True)
+         ],
+         # Reference filtering
+        [sg.Text("Computation:", size=(12, 1), justification='right', font=("Arial", 12)),
+         sg.Input("s1", key='-sf-', size=(20, 1), font=("Arial", 12), expand_x=True, background_color = '#BFE9FF',
+                  tooltip="Selecting the method to reduce the computation\n"
+                          "s1: do nothing;\n"
+                          "s2/s3/s4:only use the reference sequence with the shortest/median/longest length;\n"
+                          "s5: remove the reference sequences with abnormal length;\n"
+                          "file: specify the name of reference sequences to use.\n"
+                          "[default='s1']"), sg.FileBrowse("File", target="-sf-", font=("Arial", 12), file_types=(("txt", "*.txt"),))],
+
+         ]
     left_col = [
         # 基本设定
         [sg.Text('Basic Option', size=(12, 1),
@@ -448,36 +474,16 @@ def geneminer_GUI():
                  justification='left', font=("Arial", 12, 'bold'))],
         [sg.Frame('Filter', layout=filter_frame,
                   expand_x=True, font=("Arial", 12))],
-        [sg.Frame('Assemble', layout=assemble_frame,
+        [sg.Frame('Assembler', layout=assemble_frame,
+                  expand_x=True, font=("Arial", 12))],
+        [sg.Frame('Verifier', layout=verify_frame,
                   expand_x=True, font=("Arial", 12))],
 
-        [sg.Text('Iterative:', size=(12, 1), justification='right', font=("Arial", 12)),
-         sg.Input(2, key='-in-', size=(6, 1), font=("Arial", 12), expand_x=False, readonly=False,
-                  tooltip="Specify the number of iterative loop to filter reads correctly around indels"),
-         sg.CB(' ', font=("Arial", 12), size=(0, 1),
-               key='-cbin-', enable_events=True),
-
-
-         sg.Text('Bootstrap:', size=(8, 1),
-                 justification='right', font=("Arial", 12)),
-         sg.Input(10, key='-bn-', size=(6, 1), font=("Arial", 12), expand_x=False, readonly=False,
-                  tooltip="Specify the bootstrap number. Evaluate the results based on the bootstrap method"),
-         sg.CB(' ', font=("Arial", 12), size=(1, 1),
-               key='-cbbn-', enable_events=True)
-         ],
+        
 
 
 
-        # Reference filtering
-        [sg.Text("Computation:", size=(12, 1), justification='right', font=("Arial", 12)),
-         sg.Input("s1", key='-sf-', size=(20, 1), font=("Arial", 12), expand_x=True,
-                  tooltip="Selecting the method to reduce the computation\n"
-                          "s1: do nothing;\n"
-                          "s2/s3/s4:only use the reference sequence with the shortest/median/longest length;\n"
-                          "s5: remove the reference sequences with abnormal length;\n"
-                          "file: specify the name of reference sequences to use.\n"
-                          "[default='s1']"), sg.FileBrowse("File", target="-sf-", font=("Arial", 12), file_types=(("txt", "*.txt"),))],
-
+        
         # 空行备用
         # [sg.T(' ', size=(40,1), justification='left', font=("Arial",12,'bold'))],
     ]
@@ -487,7 +493,7 @@ def geneminer_GUI():
         [sg.MLine(key='-ML1-', size=(85, 10), enter_submits=True, reroute_stdout=True, reroute_stderr=True,
                   enable_events=True, visible=False)],
         [sg.MLine(key='-ML2-', size=(85, 20), autoscroll=True,
-                  font='TkFixedFont')],  # 等宽字体
+                  font='TkFixedFont', background_color="#DEDBBD")],  # 等宽字体
 
         # 按钮
         [sg.Button('Run', size=(8, 1), font=("Arial", 12)),
@@ -576,35 +582,35 @@ def geneminer_GUI():
             if values["-1-"]:
                 args.data1 = values["-1-"]
             else:
-                args.data1 = ""
+                args.data1 = None
             if values["-2-"]:
                 args.data2 = values["-2-"]
             else:
-                args.data2 = ""
+                args.data2 = None
             if values["-12-"]:
                 args.paired = values["-12-"]
             else:
-                args.paired = ""
+                args.paired = None
             if values["-s-"]:
                 args.single = values["-s-"]
             else:
-                args.single = ""
+                args.single = None
             if values["-rtfa-"]:
                 args.target_reference_fa = values["-rtfa-"]
             else:
-                args.target_reference_fa = ""
+                args.target_reference_fa = None
             if values["-rtgb-"]:
                 args.target_reference_gb = values["-rtgb-"]
             else:
-                args.target_reference_gb = ""
-            if values["-rcp-"]:
-                args.cp_reference = values["-rcp-"]
-            else:
-                args.cp_reference = ""
-            if values["-rmito-"]:
-                args.mito_reference = values["-rmito-"]
-            else:
-                args.mito_reference = ""
+                args.target_reference_gb = None
+            # if values["-rcp-"]:
+            #     args.cp_reference = values["-rcp-"]
+            # else:
+            #     args.cp_reference = None
+            # if values["-rmito-"]:
+            #     args.mito_reference = values["-rmito-"]
+            # else:
+            #     args.mito_reference = None
             if values["-o-"]:
                 if not os.path.exists(values["-o-"]):
                     os.makedirs(values["-o-"])
@@ -680,8 +686,8 @@ def geneminer_GUI():
             window['-s-'].update("")
             window['-rtfa-'].update("")
             window['-rtgb-'].update("")
-            window['-rcp-'].update("")
-            window['-rmito-'].update("")
+            # window['-rcp-'].update("")
+            # window['-rmito-'].update("")
             window['-o-'].update("")
             # 高级参数部分
             window['-k-'].update("31")

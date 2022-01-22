@@ -78,11 +78,11 @@ def check_threads_number(thread):
     thread_number = 1  # 初始化，至少一个
     thread_number_all = multiprocessing.cpu_count()
     if thread == "auto":
-        thread_number = int(thread_number_all * 0.25)
+        thread_number = int(thread_number_all * 0.75)
         if thread_number == 0:
-            thread_number = thread_number + 1
-        elif thread_number>=8:
-            thread_number=8
+            thread_number = 1
+        elif thread_number >= 8:
+            thread_number = 8
         else:
             thread_number=thread_number
     else:
@@ -90,7 +90,7 @@ def check_threads_number(thread):
         if thread.isdigit():         #判断是否为纯数字
             thread = int(thread)
             if thread > thread_number_all:
-                print("Number of threads exceed the  maximum, please check the -t parameter")
+                print("Number of threads exceed the maximum, please check the -t parameter")
                 gv.set_value("my_gui_flag", 0)
                 sys.exit()
             elif thread <= 0:

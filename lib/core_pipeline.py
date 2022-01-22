@@ -145,7 +145,7 @@ class Pipeline():
         for file in files:
             task_pool.append(executor.submit(self.wrap_filter_reads, file))
 
-        for task in tqdm(desc="{0:<22}".format("Filtering_reads"), iterable=futures.as_completed(task_pool),
+        for task in tqdm(desc="{0:<22}".format("Filtering reads"), iterable=futures.as_completed(task_pool),
                          total=len(task_pool)):
             result.append(task.result())
 
@@ -231,7 +231,7 @@ class Pipeline():
 
         for file in files:
             task_pool.append(executor.submit(self.wrap_assemble_reads, file, kmer))
-        for task in tqdm(desc="{0:<22}".format("Assembling_reads"), iterable=futures.as_completed(task_pool),
+        for task in tqdm(desc="{0:<22}".format("Assembling reads"), iterable=futures.as_completed(task_pool),
                          total=len(task_pool)):
             result.append(task.result())
 
@@ -314,7 +314,7 @@ class Pipeline():
         for file in files:
             task_pool.append(executor.submit(self.wrap_check_contigs, file))
 
-        for task in tqdm(desc="{0:<22}".format("Verifying_contigs"), iterable=futures.as_completed(task_pool),total=len(task_pool)):
+        for task in tqdm(desc="{0:<22}".format("Verifying contigs"), iterable=futures.as_completed(task_pool),total=len(task_pool)):
             results.append(task.result())
         executor.shutdown()
 
@@ -472,7 +472,7 @@ class Pipeline():
         for file in files:
             task_pool.append(executor.submit(self.wrap_record_log, file))
 
-        for task in tqdm(desc="{0:<22}".format("Recording_information"), iterable=futures.as_completed(task_pool), total=len(task_pool)):
+        for task in tqdm(desc="{0:<22}".format("Summary information"), iterable=futures.as_completed(task_pool), total=len(task_pool)):
             result_information.append(task.result())
 
         # 调整顺序

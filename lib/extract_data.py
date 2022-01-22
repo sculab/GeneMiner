@@ -31,7 +31,7 @@ def extract_raw_data(out_dir,raw_data_dict, data1, data2, paired, single, data_s
     raw_data_list = list(raw_data_dict.values())[0]
     if type == [] or raw_data_list == []:
         sys.exit()
-    print("Collecting_raw_data....", end="", flush=True)
+    print("Collecting raw data....", end="", flush=True)
     dir_make(out_dir)
 
     path1=os.path.join(out_dir,"data1.fq")
