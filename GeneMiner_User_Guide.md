@@ -1,5 +1,9 @@
 # GeneMiner
-	Thank you for choosing miner. This document will help you learn how to use GeneMiner. Please note that GeneMiner is still in the testing stage, so this document may be updated in a future version upgrade.If you have any questions, you can contact xiepulin@stu.scu.edu.cn  Or 15162176893@163.com
+​		Thank you for choosing miner. This document will help you learn how to use GeneMiner. Please note that GeneMiner is still in the testing stage, so this document may be updated in a future version upgrade.
+If you have any questions, you can contact xiepulin@stu.scu.edu.cn  or 15162176893@163.com
+
+[TOC]
+
 
 
 # 1. About GeneMiner
