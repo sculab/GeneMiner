@@ -1,3 +1,5 @@
+
+
 # GeneMiner
 
 ​	感谢您选择GeneMiner(GM)。本文档将帮助您学会如何使用GeneMiner。请注意，GeneMiner仍处于测试阶段，因此本文档可能会在未来的版本升级中更新。
@@ -6,488 +8,423 @@
 
 [TOC]
 
-## 1. 简介
+# 1. 简介
 
-​	GeneMiner(Gene-Miner，基因矿工)是一款新开发的用于从下一代测序数据中挖掘系统发育标记的软件。GeneMiner 应用场景广阔。可以从浅层基因组中提取叶绿体全基因组，全部或者部分线粒体基因组，以及核基因组中高度重复区 (如rDNA)等；也可以从转录组中提取大量的系统发育标记，如被子植物353单拷贝基因。	GeneMiner运行速度很快。因为软件选择了数据量大小合适的原始数据，避免算力浪费；采用了后缀树算法,加快reads过滤速度;选择了适合于短reads拼接的软件（minia）；支持多线程并行，充分调用计算机资源等一系列方法，大幅度增加软件运行速度，让用户能在较短的时间挖掘大量系统发育标记。GeneMiner的结果十分准确。我们通过实验和自展检测的方法对结果进行校验，准确率均超过99%。GeneMiner操作简单，使用方便。用户可以在Windows、Mac和Linux平台上使用，在未来的版本中，我们也将推出对用户更加友好的图形界面版本。最后，GeneMiner在降低测序成本，扩大基因选择方面也有显著优势。
+​		GeneMiner(Gene-Miner，基因矿工)是一款用于从二代测序(NGS)数据中挖掘基因的软件，能够从极低质量和深度的源数据中获取高质量的特定目标基因。例如从浅层基因组测序数据中准确提取叶绿体/线粒体的全部或者部分基因、核基因组中高度重复区 (如*nr*DNA)等；从转录组测序数据中提取大量的单拷贝系统发育标记；从宏基因组数据中获取特定微生物的环境响应基因等。可广泛应用于系统发育与进化研究、海关检验检疫、特定功能基因的挖掘等，在降低测序成本，扩大基因选择方面具有显著优势。GeneMiner的结果十分准确，在真实的实验验证中达到或接近了一代测序的结果，即便参考序列与目标序列相似度低于90%，依然能够依靠梯度逼近算法获得100%准确的结果。软件创新性的提出了基于自展检测的校验方法，可以在不依赖参考序列的情况下对目标序列进行重复验证，输出更加可靠的一致性序列。基于算法层面的大量优化，GeneMiner的运算速度和内存消耗都非常优越，支持多线程并行，充分调用计算机资源，既能够部署在高性能运算集群上，也可以在普通个人电脑上运行。GeneMiner对用户非常友好，支持Windows、Mac和Linux各种主流的操作系统，用户可以选择命令行界面或图形界面进行使用。
 
-## 2.下载
+# 2.下载
 
-​		https://github.com/happywithxpl
+GeneMiner 在MIT License下是开源的。它通过github存储库分发:https://github.com/sculab/GeneMiner，你可以随时下载最新的的版本。请务必关注github，以保持最新的代码更改。我们对以前版本的代码不提供任何支持!版本号遵循符号x.y.z，其中x随着主要的代码重组而改变，y当添加新特性时发生更改，并且伴随着bug修复而发生更改
 
-​        后续补充
+# 3. 安装
 
-## 3. 安装
-
-For Linux users:
-
+## 3.1 For Linux users
+自动安装（推荐）
 ```shell
-#(1)解压
-tar -zxvf  GeneMiner.tar.gz
+tar -zxvf geneminer.tar.gz # 解压缩
+cd geneminer
+python install.py   #根据脚本提示完成，自动安装依赖并将GeneMiner写入环境变量
+```
+手动安装（自动安装遇到问题时使用）
+```shell
+tar -zxvf geneminer.tar.gz # 解压缩
+cd geneminer
+# 手动安装所需库
+pip3 install  biopython --user
+#也可以根据软件提供的依赖文件安装
+pip3 install -r requirements.txt --user
 
-#(2)校验环境与安装依赖
-cd GeneMiner
-python setup.py 
-
-如果这上一步安装依赖失败，可以自己安装
-pip3 install -r requirements --user #非管理员
-sudo pip3 install -r requirements   #管理员
-
-#(3)将GeneMiner写入环境变量
-#打开系统环境变量配置文件
-vim ~/.bashrc
-#打开后在文件最后面添加以下语句
-export PATH="your/GeneMiner/path:$PATH" 
-#保存退出，然后在bash中执行source命令使其生效
+# 配置环境变量
+echo "export PATH=\$PATH:$(pwd)" >> ~/.bashrc
 source ~/.bashrc
-
-#(4)检测是否配置成功
-GeneMiner -h
+```
+关闭并重启终端，检测是否配置成功
+```shell
+geneminer.py -h # 命令行界面
 ```
 
-**For Windows users:** 
+## 3.2 For Mac users
+下载对应版本的打包好的图形界面app，双击即可运行。（推荐）
+要手动配置命令行和图形界面版本，使用如下命令进行自动安装：
 
-**For Mac users:** 
+```shell
+tar -zxvf geneminer.tar.gz # 解压缩
+cd geneminer 
+python3 setup.py #脚本会自动安装依赖，并将GeneMiner写入环境变量
+```
+或者使用如下命令手动安装：
+```shell
+tar -zxvf geneminer.tar.gz # 解压缩
+cd geneminer
+# 手动安装所需库
+pip3 install  biopython --user
+#也可以根据软件提供的依赖文件安装
+pip3 install -r requirements.txt --user
 
+# 配置环境变量
+# 对于macOS Catalina (10.15) 及其之后的系统：
+echo "export PATH=\$PATH:$(pwd)" >> ~/.zshrc
+source ~/.zshrc
+# 对于macOS Catalina (10.15) 之前的系统：
+echo "export PATH=\$PATH:$(pwd)" >> ~/.bash_profile
+source ~/.bash_profile
+```
+关闭并重启终端，检测是否配置成功
+```shell
+geneminer.py -h # 命令行界面
+```
+## 3.3 For Windows users
+### 3.3.1 安装打包好的图形界面应用程序（推荐）
+下载GeneMiner对应版本的图形界面应用程序，双击即可运行。GeneMiner windows版maual详见：xxxxxxxxxxxxxxxxxx
+### 3.3.2 配置命令行界面应用程序
+配置命令行界面的GeneMiner需要您在系统中安装python 3.6以上的版本，您也可以安装Anaconda或者miniconda，具体安装方式请参阅python及其不同发行版的官方技术文档。您可以参考如下步骤配置GeneMinier：
+自动安装
 
+- 下载GeneMiner的Windows安装包，双击进行自动安装。
+  如果自动安装遇到问题，可以执行手动安装：
 
-## 4.快速入门
+手动安装
 
-​		在对你的测序数据进行挖掘之前，我们建议你先了解自己的测序数据。了解测序方式、测序深度、质量、数据量大小等等。我们的软件主要适用于Illumina平台所返回的二代测序数据。经大量的数据测试验证，GeneMiner能从10-20x的二代测序数据中挖掘到nuclear_gene、cp-gene以及mito-gene等，也可以从转录组数据中挖掘出部分单拷贝基因。
+- 解压缩：将下载的windows安装包解压到指定的文件夹，例如geneminer。
+- 打开命令行，手动安装所需库：
+```shell
+pip3 install  biopython --user
+pip3 install  pysimplegui --user
+#也可以根据软件提供的依赖文件批量安装
+pip3 install -r requirements.txt --user
+```
+- 将geneminer文件夹加入用户环境变量path中。
+- 关闭并重启终端，检测是否配置成功
+```shell
+geneminer.py -h # 命令行界面
+```
+
+# 4.快速入门
+
+​		在对您的测序数据进行挖掘之前，我们建议您先了解自己的测序数据，包括测序方式、深度、质量、数据量大小等等。我们的软件主要适用于Illumina平台所返回的二代测序数据。经大量的测试数据验证，即便对于较低的测序深度(10x以下)，GeneMiner也能从中挖掘到单拷贝核基因(nuclear gene)、叶绿体基因(cp gene)以及线粒体基因(mito gene)等，也可以用于从转录组数据中挖掘单拷贝基因。
+
+​		用于练手的数据存放在 GeneMiner/example/
 
 （1）挖掘单个目标基因
 
 ```shell
- GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rt ref.fa
+ geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa matK.fasta 
 ```
-
-值得注意的是：每一个fasta格式中只能存放同一种基因。如以下样例：
+其中data1.fq.gz和data2.fq.gz是二代测序返回的测序数据，matK.fasta是近缘物种（同属或者同科）的同源基因。
+**注意：每一个fasta文件中只能存放同一种基因（可以是不同物种的）**。如以下样例：
 
 ```
->species1 GeneA
+>GeneA_species1
 ATCGATCG
->species2 GeneA
+>GeneA_species2
 ATCGATCC
->species3 GeneA
+>GeneA_species3
 ATTGATCC
 ```
 
 （2）挖掘多个目标基因
 
-可以将多个fasta格式的文件放在一个文件夹中，便能够批量挖掘基因
+可以将多个fasta格式的文件放在同一个文件夹中，便能够批量挖掘基因
 
 ```shell
-mkdir ref
-
-mv ref1.fa ref2.fa ref3.fa ref
-
-GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rt ref
+ geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa ref_fasta
 ```
 
-（3）批量挖掘不同类型的基因
+其中cp.gb是GenBank格式的叶绿体参考基因组，mito.gb是GenBank格式的线粒体参考基因组，-rcp和-rmito用于指定参考基因组类型
+
+
+（3）评估可靠性
 
 ```shell
-GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rn nuclear_ref -rmito mito_ref -rcp cp_re
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz  -rtfa  matK.fasta  -bn 10
 ```
 
-（4)检测结果正确性
+-bn 自展检测的次数。采用基于Bootstrap思想的方法评估结果的准确性。在不依赖参考序列的情况下对目标序列进行重复验证，输出更加可靠的一致性序列。
+
+
+
+# 5.详细使用指南
+
+## 5.1参数解读
+
+使用geneminer -h ，计算机将显示所有选项，后面我将详细介绍它们的使用方法和一些小窍门
 
 ```shell
-GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rn ref --check True --bootstrap_number 10
-```
-
-值得注意的是：采用自展检测的方法对结果正确性进行评估，同时计算耗时将大幅度增加
-
-
-
-## 5.详细介绍
-
-### 5.1参数解读
-
-使用GeneMiner -h ，计算机将显示所有选项，后面我将详细介绍它们的使用方法和一些小窍门
-
-```shell
-GeneMiner -h
-usage: GeneMiner <-1 -2|-s|-12>  <-rn|rcp|-rmito|rt>  [options]
-
-GeneMiner: a software for extracting phylogenetic markers from skimming genome
-Version: 1.0
-Copyright (C) 2021 Pu-lin Xie
-Please contact <xiepulin@stu.edu.scu.cn>, if you have any bugs or questions
+GeneMiner: a software for extracting phylogenetic markers from next generation sequencing data
+Version: 1.0.0
+Copyright (C) 2022 Pulin Xie
+Please contact <xiepulin@stu.edu.scu.cn> if you have any questions
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help          show this help message and exit
 
 Basic option:
-  -1                    forward paired-end reads,support fastq/fastq.gz/fastq.bz2
-  -2                    reverse paired-end reads,support fastq/fastq.gz/fastq.bz2
-  -12                   interlaced forward and reverse paired-end reads,support fastq/fastq.gz/fastq.bz2
-  -s , --single         single-read, support fastq/fastq.gz/fastq.bz2
-  -o , --out            Specify the result folder [default='auto']
-  -rcp <file|dir>       reference of chloroplast genome,only support GenBank-format
-  -rmito <file|dir>     reference of mitochondrial genome,only support GenBank-format
-  -rn <file|dir>        reference of nuclear_genes,only support fasta-format
-  -rt <file|dir>        reference of target_genes,only support fasta-format
+  -1                  One end of the paired-end reads, support fastq format
+  -2                  Another end of the paired-end reads, support fastq format
+  -s , --single       Single reads, support fastq format
+  -o , --out          Specify the result folder
+  -rtfa <file|dir>    References of target genes, only support fasta format
+  -rtgb <file|dir>    References of target genes, only support GenBank format
 
 Advanced option:
-  -n , --number         The number of rows of raw data from skimming genomes,default=1000000
-  -k , --kmer           size of a kmer  [default =31]
-  -max                  gene maximum length  [default =5000]
-  -min                  gene minimum length  [default =300]
-  -t , --thread         Specify the number of threads you want to run [default='auto']
-  -b , --boundary       extend the length to both sides of the gene while extracting  genes from  Genebank file [default=75]
-
-Bootstrap option:
-  --check [False,True]  Evaluate the accuracy of the results by using bootstrap method.
-                        If you use this parameter, the computation will be greatly increased.default=False
-  --bootstrap_number    Specify the bootstrap number . The number ranges from 1 to 1024
+  -k1 , --kmer1       Specify the size of the wordsize to filter reads  [default = 29]
+  -k2 , --kmer2       Specify the size of the kmer to assemble reads  [default = 31]
+  -d , --data_size    Specifies the number of reads to reduce raw data. If you want to                         use all the data, you can set as 'all' [default = 'all']
+  -step_length        the length of the sliding window on the reads [default = 4]
+  -limit_count        limit of kmer count [default=auto]
+  -limit_min_length   limit of contig length
+  -limit_max_length   limit of contig length
+  -change_seed        times of changing seed [default = 32]
+  -scaffold           make scaffold
+  -max                The maximum length of contigs [default = 5000]
+  -min                The minimum length of contigs [default = 300]
+  -t , --thread       The number of threads [default = 'auto']
+  -b , --boundary     Extend the length to both sides of the gene while extracting genes 					   from Genbank file [default = 75]
+  -bn , --bootstrap   Specify the bootstrap number. Evaluate the results based on the 			              bootstrap method
 
 ```
 
 
 
-#### 5.1.1 基础参数
+### 5.1.1 基础参数
 
 ```shell
 -1				
-双末端测序数据的正向数据  支持fastq/fastq.gz/fastq.bz2格式，务必保留正确的文件名后缀
-example: GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rt ref
-    
--2   			
-双末端测序数据的反向数据 支持fastq/fastq.gz/fastq.bz2格式，务必保留正确的文件名后缀
- example: GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rt ref
+双末端测序数据其中一端的数据，支持fastq/fastq.gz格式。务必保留正确的文件扩展名。
+example: geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa  ref.fasta
 
--12  			
-交错合并的双末端测序数据 支持fastq/fastq.gz/fastq.bz2格式，务必保留正确的文件名后缀
-example: GeneMiner -12 data.fq.gz -rt ref
+-2   			
+双末端测序数据中另一端的数据，支持fastq/fastq.gz/fastq.bz2格式。务必保留正确的文件扩展名。
+example: geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa ref.fasta
 
 -s   			
-单端测序数据 支持fastq/fastq.gz/fastq.bz2格式，务必保留正确的文件名后缀
-example: GeneMiner -s data.fq.gz -rt ref
-
--rn  <file|dir>       	
-核基因参考序列，仅支持fasta格式。
-可以输入一个fasta文件，该文件里既可以包含一个种，也可以包含多个种；还可以将多个fasta文件放入一个文件夹下。
-值得注意的是，同一个fasta格式的文件里，只能存放同一个基因的数据，例子如下：
->species_a ITS
-ACGT
->species_b ITS 
-AATT
->species_c ITS
-ATAT
-t4 species_d ITS
-CCGT
-
--rcp 	<file|dir>	
-叶绿体参考基因组，只支持GenBank的格式。
-可以输入一个GenBank文件，该文件里既可以包含一个种，也可以包含多个种；还可以将多个Genebank文件放入一个文件夹下。 
-值得注意的是，用户可以修改GeneBank文件，仅保留自己感兴趣的部分基因。同时在选择参考基因组的时候尽量选择近缘参考基因组
-example: GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rcp ref
-
--rmito    <file|dir>	
-线粒体参考基因组，只支持GenBank的格式。具体用法同rcp
-
--rt     <file|dir>  		
-目标基因参考序列，仅支持fasta格式。可用于寻找自己感兴趣的基因，自然包括了线粒体，叶绿体，核基因。
-值得注意的是，-rt的功能囊括了-rn -rcp -rmito。之所以将其区分开来，是为了方便用户使用以及后期功能模块添加
-example: GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rt ref
-
+单端测序数据，支持fastq/fastq.gz格式。务必保留正确的文件扩展名。
+example: geneminer.py -s data1.fq.gz -rtfa  ref.fasta
 
 -o , --out            
-指定输出文件夹。如果不指定输出文件夹，GeneMiner将自动使用 ''GM+时间戳'' 作为输出文件夹名字
-example: GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rt ref -o GeneMiner_out
+指定输出文件夹。
+example: geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa ref.fasta -o geneminer_out
 
-     
+-rtfa     <file|dir>  
+目标基因参考序列，仅支持fasta格式。可用于寻找自己感兴趣的基因。
+example: geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa ref.fasta
+同一个fasta格式的文件里，只能存放同一个基因的数据，例子如下：
+>species_a ITS
+AGCTAGCT
+>species_b ITS 
+AGCTAGCC
+>species_c ITS
+AGCTAGCA
+>species_d ITS
+AGCTAGAA
+
+-rtgb     <file|dir>  		
+目标基因参考序列，仅支持GenBank格式。可用于寻找自己感兴趣的基因。
+example: geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtgb gb_folder
 ```
 
 
 
-#### **5.1.2 高级参数**
+### **5.1.2 高级参数**
 
 ```shell
--n , --number     
-输入原始数据量行数，默认为100w行。
-经过测试，仅选择原始数据的一部分就能得到很好的结果，却能够大大减少软件运行时间
-对于读长为150bp的二代测序数据，100w行的数据量大概在80~100M之间。对于linux用户，可以使用cat,zcat,wc等命令查看原始数据行数
-如:cat data.fq|wc -l  or zcat data.fq.gz|wc -l
-值得注意的是:并非选择的数据量越大越好-n在100w~1000w之间效果较佳
-example:
-GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rt ref -n 2000000
+-k1 , --kmer1  
+指定wordsize的大小。geneminer将长度为L的read拆分为(L-k1+1)条长度为k1的word,如果其中某一个word能与参考序列匹配，则将这条read保留。k1的大小。取决于亲缘关系，亲缘关系越近，待挖掘基因与参考序列相似度越大，k1取值越大。该参数用于过滤reads,默认大小为17，kmer的取值范围在17~127之间
 
--k , --kmer   
+-k2 , --kmer2   
 指定k-mer长度，k-mer是de Bruijn图中节点的长度。kmer的取值严重依赖于数据集。
-默认大小为31，kmer的取值范围在15~127之间
+该参数用于拼接reads，默认大小为31，kmer的取值范围在17~127之间
 example:
-GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rt ref -n 2000000 -k 43
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa ref.fasta -n 2000000 -k1 17 -k2 31
+
+-d , --data     
+指定reads的数目。对于测序深度较高的仅选择原始数据的一部分（100w~1000w）就已经能得到很好的结果，同时又大大减少了软件运行时间
+对于读长为150bp的二代测序数据，1000w行的数据量大概在800~1000MB之间。
+
+如果您需要将全部的原始数据输入，可以将-n 设置为all
+
+如果您对原始数据量的行数感兴趣，您可以使用以下命令查看您的数据
+zcat your_data.fq.gz|wc -l 
+example:
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa ref.fasta -n 2000000
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa ref.fasta -n all
+
+-step_length
+指定reads过滤滑动窗口的长度 默认值为4
+example:
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa ref.fasta -step_length 4
+
+-limit_count
+kmer数量的最低阈值
+在reads过滤的过程中，我们会将reads拆分为长度为k1的子序列，并统计这些kmer出现的次数
+我们自然的认为，低频的kmer置信度较低。所以，geneminer将移除kmer数量（kmercount）低于limit_count的kmer
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa ref.fasta -limit_count auto
+
+-limit_min_length
+目标序列占参考序列平均长度的最小比率
+limit_min_length=目标序列长度/参考序列平均长度 默认值=1
+
+-limit_max_length
+目标序列占参考序列平均长度的最大比率
+limit_max_length=目标序列长度/参考序列平均长度 默认值=2
+example:
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa ref.fasta -limit_min_length 0.5 -limit_max_length 1.5
+
 
 -max 
-指定挖掘基因的最大长度，默认为5000bp.可结合用于-rcp/-rmito参数
+指定挖掘基因的最大长度，默认为5000bp.
 example:
-GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rcp ref -n 2000000 -k 43 -max 3000
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rcp cp.gb -n 2000000 -k 43 -max 3000
 
 -min    
-指定挖掘基因的最大长度，默认为300bp.可结合用于-rcp/-rmito参数
+指定挖掘基因的最小长度，默认为300bp.
 example:
-GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rcp ref -n 2000000 -k 43 -max 3000 -min 500
-
--b , --boundary   
-指定软边界的长度。
-当沿着挖掘出的基因的两侧延申的时候，延申长度越长，准确率越低。但这种下降不是断崖式的，而是在一定长度的缓冲区内逐渐下滑。我们将保留一段长度的缓冲区，并将这段缓冲区称为软边界。默认为0.5*reads长度，取值范围在0~200之间
-example:
-GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rcp ref -n 2000000 -k 43 -max 3000 -min 500 -b 75
+geneminer.py  -1 data1.fq.gz  -2 data2.fq.gz -rcp mito.gb -n 2000000 -k 43 -max 3000     -min 200
 
 -t , --thread  
 example:
-指定线程数量 ，软件默认根据计算机性能选择合适的线程数量
-GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rcp ref -n 2000000 -k 43 -max 3000 -min 500 -b 75 -t 8
+指定线程数量 ，如果不指定的话，软件会根据计算机性能自动选择合适的线程数量
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rcp cp.gb -n 200000 -k 43 -max 3000 -min 200 -t 8
 
-```
-
-#### 5.1.3自展检测参数
-
-```shell
---check [False,True] 
-通过自展检测的方法评估结果的正确性。
+-b , --boundary   
+指定软边界的长度。
+当沿着挖掘出的基因的两侧延申的时候，随着延申长度的增加，碱基的准确率越来越低。但这种下降不是断崖式的，而是在某一定长度的缓冲区内逐渐下滑。我们将保留一段缓冲区，并将这段缓冲区称为软边界。推荐大小为0.5*reads的长度，软边界取值范围在0~200之间。该参数与-rcp参数同时使用时才生效
 example:
-GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rt ref --check True
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rcp cp.gb -n 2000000 -k 43 -max 3000 -min 500 -b 75
 
---bootstrap_number  
-指定自展检测次数，默认为10次，取值范围为1~1024.取值越大，计算量越大，耗时越久
-GeneMiner -1 data.1.fq.gz -2 data.2.fq.gz -rt ref --check True --bootstrap_number 20
-```
-
-### 5.2 结果解读
-
-#### 5.2.1目录结构
-
-```shell
-GeneMiner将产生大量的文件，主要分为三大部分：
-第一部分
-合适大小的原始数据 ，forward.fq 和 reverse.fq
-第二部分
-结果信息，包含各种统计信息的excel文件(results_information.xlsx)和日志(log.txt)，后文将会对统计信息进行详细说明
-第三部分
-结果汇总文件，根据基因类型可分为四种。nuclear_gene, cp_gene, mito_gene, target_gene分别对应nuclear_genes,cp_genes,mito_genes,target_genes.  
-结果汇总文件还可以细分为：
-a.target/cp/mito/nuclear_genes_fasta
-    储存参考基因组的文件夹。根据参考序列，将每个基因单独写为一个fasta文件，这些文件会作为后续过滤reads的参考序列
-b.filtered_out
-	储存经filter脚本过滤后的的reads，格式为fastq格式
-c.assembled_out
-    储存经minia拼接后的contigs和untigs
-d.GM_results:
-	将所有挖掘的基因汇总在一起。一类是原始结果（gene.fasta）,一类是经过各种条件筛选后根据参考序列比对切齐的结果 （gene.trimmed.fasta）.值得注意的是，当两种结果都存在的时候，结果往往更准确。当然，用户也可以根据自己的需要将序列切齐
-e.bootstrap_out(可选)
-	存储自展检测的结果，包括参考序列库（bootstrap_db），过滤结果（filter_out）,组装结果（assembled_out）,最终挖掘结果（GM_results）和自展结果信息（GM_gene_trimmed_bootstrap.xlsx）。
-	值得注意的是，当GM_results中不存在gene.trimmed.fasta，将不会参与自展检测
-
-
+-bn , --bootstrap
+指定自展检测的次数
+基于自展检测的校验方法，可以在不依赖参考序列的情况下，对结果进行准确性评估，并对目标序列进行重复验证
+[默认值=10]
 example:
-GeneMiner -1 forward.fq  -2 reverse.fq  -rt ref --check True --bootstrap_number 10 -o GeneMiner_out
-tree -L 4 GeneMiner_result/
-GeneMiner_result/
-|-- forward.fq
-|-- log.txt
-|-- results_information.xlsx
-|-- reverse.fq
-`-- target_genes
-    |-- GM_results
-    |   |-- GM_matK.fasta
-    |   |-- GM_matK_trimmed.fasta
-    |   |-- GM_psbA.fasta
-    |   `-- GM_psbA_trimmed.fasta
-    |-- assembled_out
-    |   |-- target_matK
-    |   |   |-- assembled_out.contigs.fa
-    |   |   `-- assembled_out.unitigs.fa
-    |   `-- target_psbA
-    |       |-- assembled_out.contigs.fa
-    |       `-- assembled_out.unitigs.fa
-    |-- bootstrap_out
-    |   |-- target_GM_matK_trimmed
-    |   |   |-- GM_matK_trimmed_bootstrap.xlsx
-    |   |   |-- GM_results
-    |   |   |-- assembled_out
-    |   |   |-- bootstrap_db
-    |   |   `-- filtered_out
-    |   `-- target_GM_psbA_trimmed
-    |       |-- GM_psbA_trimmed_bootstrap.xlsx
-    |       |-- GM_results
-    |       |-- assembled_out
-    |       |-- bootstrap_db
-    |       `-- filtered_out
-    |-- filtered_out
-    |   |-- target_matK
-    |   |   |-- Filtered_reads__R1.fastq
-    |   |   |-- Filtered_reads__R2.fastq
-    |   |   `-- filtered.fq
-    |   `-- target_psbA
-    |       |-- Filtered_reads__R1.fastq
-    |       |-- Filtered_reads__R2.fastq
-    |       `-- filtered.fq
-    `-- target_genes_fasta
-        |-- matK.fasta
-        `-- psbA.fasta
-
-
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rtfa ref.fasta  -bn 100
 ```
 
 
 
-### 5.2.2 结果统计信息说明
-
-**results_information.xlsx详细说明**
-
-| 列名                      | 内容       | 注释                                                         |
-| ------------------------- | ---------- | ------------------------------------------------------------ |
-| nuclear_gene_name         | ITS        | 基因名                                                       |
-| filtered_reads_number     | 300        | 经filter过滤后获得的reads                                    |
-| richness                  | 75.88      | 丰度，过滤后的reads比对到参考序列上的平均深度，richness=(n*L1)/L2  <br /> n: reads数量 ，L1 reads平均长度  L2: 基因长度 |
-| graph_construction        | 30.766     | graph construction step(minia)                               |
-| assembled_percentage      | 0.186      | 可以用于拼接的reads百分比                                    |
-| assembled_max_length      | 1181       | 拼接后获得的最长序列的长度                                   |
-| result_max_length         | 1181       | 经筛选后的结果中最长序列的长度                               |
-| identity_trimmed_sequence | 85.83%     | 经剪切后的序列与参考序列的一致度                             |
-| coverage_trimmed_sequence | 98.52%     | 参考序列对于经剪切序列的覆盖度                               |
-| Gene_extraction           | successful | 基因是否提取成功                                             |
-| Gene_aligned_cut          | successful | 基因是否能够对齐剪切成功                                     |
 
 
-
-### 5.3 例子
-
-#### 5.3.1 提取叶绿体基因：
+## 5.2 结果解读
 
 ```shell
-GeneMiner -1 /data/Daucus_carota.1.fq.gz -2 /data/Daucus_carota.2.fq.gz  -rmito ref_cp.gb -b 0 -max  3000    -min 300 -o Daucus_carota_cp_genes 
+
 ```
 
-当有较为充足的数据量，合适的参考序列时，本软件几乎能从浅层基因组数据中提取所有的叶绿体基因。这为叶绿体组装不成环提供了第二种解决方法。
+## 5.3 例子
 
-#### 5.3.2 提取线粒体基因：
+### 5.3.1 提取叶绿体基因：
+
+​		当有较为充足的数据量，近缘的参考序列时，本软件几乎能从浅层基因组数据中提取所有的叶绿体基因同时在系统发育研究中.这为叶绿体组装不成环提供了另一种解题思路。
 
 ```shell
-GeneMiner -1 /data/Daucus_carota.1.fq.gz -2 /data/Daucus_carota.2.fq.gz -rmito ref_mito.gb -o Daucus_carota_mito_genes
+#example
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz  -rmito ref_cp.gb -b 0 -max  3000    -min 300 -o results
 ```
 
-我们挖掘到的线粒体主要在（mito_genes/GeneMiner_results)文件夹内，其中有后缀为trimmed.fasta的文件，说明该结果较好，而其他没有trimmed后缀的文件可能是因为序列较短而不能进一步的剪切。
+### 5.3.2 提取线粒体基因：
 
-对于植物来说，线粒体基因所发生的突变较多，因此，如果你想挖掘出更多线粒体基因，可能需要输入更多的数据，或寻找更加近缘的参考序列。
-
-由于本软件所取数据默认为原始数据的前1000000行reads，因此，你可以在现有数据的基础上适当提高-n的输入：
+​		线粒体基因挖掘难度往往会比叶绿体基因大很多，其一般原因在于：原始数据本身未包含太多线粒体基因，线粒体基因变异较大。针对这种情况，您可以适当增加原始数据量大小以及选择更近源的参考序列.
 
 ```shell
-#使用前3000000行的数据输入
-GeneMiner -1 /data/Daucus_carota.1.fq.gz -2 /data/Daucus_carota.2.fq.gz -rmito ref_mito.gb -o Daucus_carota_mito_genes -n 3000000
+#example
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rmito mito.gb  -n 15000000
 ```
 
-#### 5.3.3 提取核基因：
+### 5.3.3 提取核基因：
+
+​        在测序深度较低的测序数据中，GeneMiner也能挖掘出中高拷贝数基因，如rDNAs
 
 ```shell
+#example
 #ITS
-GeneMiner -1 /data/Daucus_carota.1.fq.gz -2 /data/Daucus_carota.2.fq.gz -rn ITS_ref.fasta -o Daucus_carota_ITS
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rn ITS_ref.fasta -o ITS_out
 #18S
-GeneMiner -1 /data/Daucus_carota.1.fq.gz -2 /data/Daucus_carota.2.fq.gz -rn 18S_ref.fasta -o Daucus_carota_18S
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rn 18S_ref.fasta -o 18S_out
 #ETS
-GeneMiner -1 /data/Daucus_carota.1.fq.gz -2 /data/Daucus_carota.2.fq.gz -rn ETS_ref.fasta -o Daucus_carota_ETS
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rn ETS_ref.fasta -o ETS_out
 #26S
-GeneMiner -1 /data/Daucus_carota.1.fq.gz -2 /data/Daucus_carota.2.fq.gz -rn 26S_ref.fasta -o Daucus_carota_26S
+geneminer.py -1 data1.fq.gz -2 data2.fq.gz -rn 26S_ref.fasta -o 26S_out
 ```
 
-#### 5.3.4 提取单拷贝基因
+# 6.方法
 
-我们推荐从转录组数据中提取核单拷贝基因，可以根据目前已被开发的适用于系统发育构建的被子植物353单拷贝基因作为参考序列。
+GeneMiner 核心流程主要分为三个步骤：
 
-```shell
-GeneMiner -1 /data/Daucus_carota.1.fq.gz -2 /data/Daucus_carota.2.fq.gz -rt 353_fastafile -o Daucus_carota_35
-
-```
-
-值得注意的是
-
-第一：由于原始数据测序深度较浅，而单拷贝基因仅在单倍体基因组中出现一次，所有有一定概率并不能得到结果。
-
-第二：挖掘某个基因特别是单拷贝基因时，若提供多个参考序列且参考序列之间差异度太大,GeneMiner将产生多个结果. 因此，输入的参考序列建议使用单条序列，或者输入的参考序列之间的差异度应当保证在15%之内。
-
-第三：由于输入的原始数据是转录组，参考序列应该为对应的mRNA等转录本信息
+![](https://gitee.com/xiepulin/picgo_xpl/raw/master/GeneMiner_picture/流程图改改改.svg)
 
 
 
-## 6.结果校验(可选)
+## **6.1数据过滤：**
 
-采用bootstrap方法，对GeneMiner产生的结果进行检测。
+​		区别传统的先拼接序列再映射到参考基因组的方法，GeneMiner选择了先将序列映射到参考基因组再组装序列。首先将格式为fastq的二代数据作为原始的输入数据，根据实际情况，选择大小合适的数据量。接着采用Ukkonen’s算法将用户提供的参考基因组构建为一棵后缀树。随后，将原始数据中长度为L的reads拆分为（L-k+1）个长度为k的子序列，其中L的大小取决于测序方式，k的大小取决于用户的设定的kmer。最后，如果检测到某一个reads的kmer在后缀树中出现，则把该条reads保留。
 
-```shell
-#自展检验10次
-GeneMiner -1 /data/Daucus_carota.1.fq.gz -2 /data/Daucus_carota.2.fq.gz -rn ITS_ref.fasta -o Daucus_carota_ITS --check True --bootstrap_number 10
-```
+​		由于采用的先过滤后拼接的策略，需要过滤的reads数据量相当大，需要拼接的reads则大幅度减少，这意味着拼接不再是计算瓶颈，过滤这一步骤才是本方法需要突破的核心。幸运的是，我们将过滤这一步骤的算法复杂读降低到O（n），大幅度压缩了时间成本。
 
 
 
-## 7.原理详细介绍
+## 6.2 拼接与校正：
 
-等小郭的图
+### 6.2.1数据拼接
 
+​       将过滤后的reads拼接为contigs，我们选择minia3作序列拼接软件。主要原因在于，区别于其他的一些序列拼接软件如velvet、spades、soapdenovo,minia3准确度高，速度快，消耗的内存更小，更加适用于短序列的拼接。
 
+(Ⅰ)make kmers
 
+把过滤出的reads拆分为更小的片段k-mers
 
+(Ⅱ)remove low quality kmers
 
-## 8. 常见问题
+绘制kmer频数分布曲线，横坐标为kmer的频数，纵坐标为该频数的kmer的总数，对曲线做平滑处理，第一次拐点的位置的横坐标即为作为limit的阈值。凡是kmer频次低于阈值的kmer,将作为低质量的kmer剔除。由于每一个目标loci的kmer频数分布曲线不尽相同，所以，每个目标基因都有其自适应的limit
 
-### 8.1 如何验证结果的可靠性？
+(Ⅲ)choose seed
 
-​		我们的软件设置了可以以自展检验的方式对结果进行检验，如果你对你的结果产生了质疑，可以使用--check选项，并设置自展次数，但自展检验需要反复的调用GeneMiner，因此，建议设置一个合适的值，以免耗费过多时间。
+(Ⅳ)build graph
 
-​		同时也可以利用NCBI的二代测序数据或者真实的一代数据作为补充验证
+(Ⅴ)walk graph and output contig
 
+### 6.2.2数据校验
 
+​      minia3可能产生多条contigs,而这些序列不都是我们需要的，因此GeneMiner对这些contigs做了进一步的处理。
 
-### 8.2 没有得到结果怎么办？
+**（1）长度校正**
 
-​		影响基因挖掘成功率的的主要原因大概有如下方面：第一，原始数据质量的好坏。相较于raw_data，clean_data的效果更好。第二，数据量的大小，数据量太小可能导致基因丰度不够无法拼接；数据量太大可能导致多种拼接情况的出现。我们推荐将-n设置为100w~1000w。第三，参考序列的选择。选择近缘属或者同属不同种的序列作为参考序列，往往能够得到较好的结果。同时，多条参考序列的时候，注意参考序列之间的差异度不要太大。
+​		根据参考的序列的平均长度，过滤掉长度太长或者太短的contigs。
 
+**（2）方向校正**
 
-
-### 8.3 有GM_gene.fasta而没有GM_gene_trimmed.fasta怎么办
-
-​		GM_gene_fasta是GeneMiner挖掘出原始contigs，后续对挖掘出来的contigs做了进一步的过滤。比如根据参考序列的长度，删除了太长或太短的序列；根据参考序列的方向，判断contigs是否需要反向互补从而保证contigs和参考序列方向一致；使用双序列局部比对方法确定出参考序列和contigs中高度吻合的部分。经过上述等方法最终获得GM_gene_trimmed.fasta。如果仅有GM_gene_trimmed.fasta而没得到GM_gene.fasta，说明原始contigs不满足所有过滤要求。值得注意的是，GM_gene.fasta依然值得使用，用户可以根据自己的需求对序列进行比对切齐。
-
-
-
-### 8.4 结果有多条序列怎么办？
-
-​		出现这种情况的原因可能是由于用户提供了多条参考序列，且参考序列之间的变异度大于20%，对于这种情况，我们推荐使用单条参考序列。一般来说，多条序列的结果中应当有一条序列是正确的，用户可以尝试用blast进行手动筛选并检验。在未来的版本中，我们将对用户输入的多条参考序列进行处理，去除相对差异较大的序列。
+​		GeneMiner利用BLAST+套件中的makeblastdb和balstn工具，将与参考序列的方向一致的contigs保留，与参考序列方向不一致的contigs做反向互补处理。
 
 
 
-### 8.5 如何寻找合适的参考序列？
+## 6.3自展检测
 
+​		GeneMiner创新性的提出了基于自展检测的校验方法，可以在不依赖参考序列的情况下，对结果进行准确性评估，并对目标序列进行重复验证，输出更加可靠的一致性序列。
 
+(Ⅰ)首次获取目的基因后，与参考序列进行比对，得到变异率v。为了防止结果中有多条contigs或有多条参考序列导致差异度不方便计算，GeneMiner根据序列之间的一致度与覆盖度，选择了契合度最高的contig与参考序列作为计算差异度的标准。
 
-（到时候会补充一个随着变异度变化  结果准确度变化的图）
+(Ⅱ)将目的基因每个位点以变异率v进行随机重采样，获取变异率同样为v的ref1, ref2.....refn
 
-​	
+(Ⅲ)使用ref1, ref2.....refn作为参考序列重新运行整个过程，得到新的目的基因target1, target2.... targetn
 
-### 8.6  -n 设置多少合适？
+(Ⅳ)对target1, target2.... targetn获取一致性序列，位点的一致性比例即为该位点的支持率		
 
-​	提取较为保守的序列，用默认的1000000行的数据，即250000条reads就足够了，例如18s、26s、5.8s，如果对这些序列用过多的reads反而可能提取不到结果，但对于ITS、ETS这样在nrDNA中相对不太保守的序列来说，则需要用更多的数据。
+# 7. 常见问题
 
+## 7.1 如何验证结果的可靠性？
 
+​		我们的软件设置了基于自展检测的方法对结果进行检验，如果您对您的结果产生了质疑，可以使用-bn选项，并设置自展次数，但自展检验需要反复的调用GeneMiner内部脚本，因此，建议您设置一个合适的值，以免耗费过多时间。同时也可以利用NCBI上的二代测序数据或者真实的一代数据作为补充验证
 
-（到时候会补充一个改变数据量 结果准确度变化的图  ）
+## 7.2 没有得到结果怎么办？
 
+​		影响基因挖掘成功率的的主要原因大概有如下方面：第一，原始数据质量的好坏。相较于raw_data，clean_data的效果更好。第二，数据量的大小，数据量太小可能导致基因丰度不够无法拼接；数据量太大可能导致多种拼接情况的出现。我们推荐将-n设置为100w~1000w。第三，参考序列的选择。选择近缘属或者同属不同种的序列作为参考序列，往往能够得到较好的结果。同时，当存在多条序列作为参考序列的时候，参考序列之间的差异度不要太大。
 
+## 7.3  -n 设置多少合适？
 
-## 9.引用
+​		一般来说使用默认参数n=10000000，即2500000条reads即可以很好的满足需要。但是对于单拷贝或者低拷贝序列，可以适当的增加数据量。我们不建议将全部数据输入，因为不仅会大大降低速度，而且由于拼接出的情形增多，反而得不到好的结果。
+
+# 8.引用
 
 当你使用GeneMiner的时候请引用：
 
-GeneMiner :  a software for extracting phylogenetic markers from skimming genome
-
-
-
-请同时引用：
-
-K. Salikhov, G. Sacomoto and G. Kucherov. [*Using cascading Bloom filters to improve the memory usage for de Brujin graphs*](http://minia.genouest.org/files/cascading-wabi13.pdf), WABI 2013
-
-Chikhi R, Rizk G. Space-efficient and exact de Bruijn graph representation based on a Bloom filter[J]. Algorithms for Molecular Biology, 2013, 8(1): 1-9.
+GeneMiner : a software for extracting phylogenetic markers from next generation sequencing data
 
