@@ -54,6 +54,7 @@ gv._init_()  # 在basic 中已经申明过了
 
 
 def main(args):
+    t1 = time.time()
     gv.set_value("my_gui_flag", 1)  # 用于判定GUI是否处于运行状态，1代表运行，0代表没有运行
 
     '''
@@ -192,6 +193,11 @@ def main(args):
         my_bootstrap_pipeline_main(configuration_information)
 
     my_pack_results_pipeline_main(configuration_information)
+
+    t2 = time.time()
+    whole_time = format(t2 - t1, "6.2f")
+    print("whole time: {}s".format(whole_time))
+
 
     gv.set_value("my_gui_flag", 0)  # 用于判定GUI是否处于运行状态，1代表运行，0代表没有运行
 
@@ -703,7 +709,7 @@ if __name__ == "__main__":
 
 
 
-    t2=time.time()
+
 
 
     # main(args)
