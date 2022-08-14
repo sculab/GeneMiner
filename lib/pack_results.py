@@ -5,106 +5,191 @@
 # @File    : pack_results.py
 # @Software: PyCharm
 
+
+import csv
+from collections import defaultdict
 import os
-import shutil
-import platform
-from basic import dir_make,cutting_line
+from lib.basic import mylog, is_exist
 
 
-def pack_the_results(type,configuration,out_dir_name,bootstrap_number,iterative_number):
-    message="Packing results...."
-    print(message,end="",flush=True)
-    out_dir_name=out_dir_name
-    reference_database=configuration["reference_database"]
-    filtered_out=configuration["filtered_out"]
-    assembled_out=configuration["assembled_out"]
-    assembled_log=configuration["assembled_log"]
-    GM_results=configuration["GM_results"]
-    bootstrap_out=configuration["bootstrap_out"]
-    iterated_out=configuration["iterated_out"]
+def parse_csv(path):
+    my_info = []
+    with open(path, "r", newline='') as f:
+        reader = csv.reader(f)
+        number = 0
+        for row in reader:
+            temp = {}
+            if number == 0:
+                number += 1
+                continue
+            number += 1
+            temp[row[0]] = row[1:]
+            my_info.append(temp)
 
-    reference_database_path=os.path.join(out_dir_name,reference_database)
-    filtered_out_path=os.path.join(out_dir_name,filtered_out)
-    assembled_out_path=os.path.join(out_dir_name,assembled_out)
-    assembled_log_path=os.path.join(out_dir_name,assembled_log)
-    GM_results_path=os.path.join(out_dir_name,GM_results)
-    bootstrap_out_path=os.path.join(out_dir_name,bootstrap_out)
-    iterated_out_path=os.path.join(out_dir_name,iterated_out)
-
-    pack_list=[reference_database_path,filtered_out_path,assembled_out_path,GM_results_path]
-    rm_list=[assembled_log_path]
-
-    try:
-        if bootstrap_number!=None and bootstrap_number !="None":        #考虑虽然加了bootstrap参数，但是没有做出结果的情况
-            pack_list.append(bootstrap_out_path)
-        if iterative_number!=None and iterative_number !="None":
-            pack_list.append(iterated_out_path)
-
-        dir=os.path.join(out_dir_name,type+"_genes")
-        dir_make(dir)
-        try:
-            for i in rm_list:
-                shutil.rmtree(i)
-        except:
-            pass
-
-        try:
-            for i in pack_list:
-                target=os.path.join(dir,os.path.basename(i))
-                shutil.move(i,target)
-        except:
-            pass
+    return my_info
 
 
-        print("....ok",flush=True)
+def combine_csv_info(csv_info_list, bn=False):
+    my_dict = defaultdict(list)
+    my_list = []
+    csv_header_length_bn = 13  # ["gene", "k1", "re_k1", "richness", "limit", "seed", "k2", "ref_length", "short_contig_length","contig_length", "scaffold_length", "bootstrap_number", "score"]
+    csv_header_length = 11
 
-        #判断是否正确挖掘出基因(一个都没有做出来的情况)
-        GM_results_path = os.path.join(dir,GM_results)       #out_dir/sub_out_dir/GM_results
-        GM_results_list = os.listdir(GM_results_path)
+    for i in csv_info_list:
+        for j in i:
+            key = list(j.keys())[0]
+            value = list(j.values())[0]
+
+            if key not in my_dict:
+                my_dict[key] = value
+            else:
+                my_dict[key].extend(value)
+
+    for key, value in my_dict.items():
+        temp = [key]
+        temp.extend(value)
+        length = len(temp)
+        if bn:
+            if length < csv_header_length_bn:
+                temp.extend(["None"] * (csv_header_length_bn - length))
+        else:
+            if length < csv_header_length:
+                temp.extend(["None"] * (csv_header_length - length))
+
+        my_list.append(temp)
+
+    return my_list
 
 
-        if type=="tfa":
-            type="target genes from fasta-format references"
-        elif type=="tgb":
-            type = "target genes from GenBank-format references"
-        elif type=="cp":
-            type="chloroplast genes"
-        elif type=="mito":
-            type ="mitochondria genes"
+class PackResultsPipeline():
+    def __init__(self, configuration_information):
+        self.configuration_information = configuration_information
+        self.out_dir = configuration_information["out_dir"]
+        self.filtered_out = configuration_information["filtered_out"]
+        self.assembled_out = configuration_information["assembled_out"]
+        self.boostrap_out = configuration_information["bootstrap_out"]
+
+        '''
+        路径
+        '''
+        # 二级路径
+        self.filter_csv_path = os.path.join(self.out_dir, self.filtered_out, "filter.csv")
+        self.assemble_csv_path = os.path.join(self.out_dir, self.assembled_out, "assemble.csv")
+        self.bootstrap_csv_path = os.path.join(self.out_dir, self.boostrap_out, "bootstrap.csv")
+        self.results_csv_path = os.path.join(self.out_dir, "results.csv")
+
+    def get_csv_all_info(self):
+        path1 = self.filter_csv_path
+        path2 = self.assemble_csv_path
+        path3 = self.bootstrap_csv_path
+        path4 = self.results_csv_path
+        csv_info_list = []
+        for i in [path1, path2, path3]:
+            if is_exist(i):
+                csv_info_list.append(parse_csv(i))
+        if csv_info_list != []:
+            if is_exist(path3):
+                my_list = combine_csv_info(csv_info_list, bn=True)
+                header = ["gene", "k1", "re_k1", "richness", "limit", "seed", "k2", "ref_length", "short_contig_length",
+                          "contig_length", "scaffold_length", "bootstrap_number", "score"]
+                mylog(path4, header)
+                mylog(path4, my_list, row=False)
+
+            else:
+                my_list = combine_csv_info(csv_info_list, bn=False)
+                header = ["gene", "k1", "re_k1", "richness", "limit", "seed", "k2", "ref_length", "short_contig_length",
+                          "contig_length", "scaffold_length"]
+                mylog(path4, header)
+                mylog(path4, my_list, row=False)
         else:
             pass
 
 
-        if len(GM_results_list) == 0:
-            message1 = "Failed to extract the {0} ".format(type)
-            cutting_line(message1)
-        else:
-            message = "Successfully, the {0} have been extracted".format(type)
-            cutting_line(message)  #最大长度为100，超过100是要报错的
+def my_pack_results_pipeline_main(configuration_information):
+    my_pack_results_pipeline = PackResultsPipeline(configuration_information)
+    my_pack_results_pipeline.get_csv_all_info()
 
 
-    except:
-        print("....ok", flush=True)
+if __name__ == '__main__':
+    data1 = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\data1_2000w.fq"
+    data2 = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\data2_2000w.fq"
+    single = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\data1.fq"
+
+    '''
+    for bootstrap
+    '''
+    # out_dir = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\demo"
+    # rtfa = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\cp_gene"
+    # rtgb = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\ref_gb\chuanxiong.gb"
+
+    # out_dir = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\matk_bootstrap"
+    # rtfa = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\matk_ref"
+    # rtgb = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\ref_gb\chuanxiong.gb"
+
+
+    '''
+    for pack_results
+    '''
+    out_dir = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\cp_out_11"
+    rtfa = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\cp_gene"
+    rtgb = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\ref_gb\chuanxiong.gb"
+
+    k1 = 17
+    k2 = 31
+    data_size = 'all'
+    step_length = 4
+    limit_count = "auto"
+    limit_min_length = 0.5
+    limit_max_length = 2
+    change_seed = 32
+    scaffold_or_not = True
+    max_length = 50000
+    min_length = 0
+    thread_number = 4
+    soft_boundary = 0
+    bootstrap_information = [True, 10]
+    bootstrap = bootstrap_information[0]
+    bootstrap_number = bootstrap_information[1]
+
+    reference_database = "reference_database"
+    filtered_out = "filtered_out"
+    assembled_out = "assembled_out"
+    bootstrap_out = "bootstrap_out"
+    GM_results = "GM_results"
+    results_log = "results.log"
+
+    filter_path = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\lib\my_filter.py"
+    assemble_path = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\lib\my_assemble.py"
+    muscle_path = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\lib\muscle3"
+
+    # 其他信息
+    my_software_name = "GM"
+    configuration_information = {"out_dir": out_dir,
+                                 "data1": data1, "data2": data2, "single": single,
+                                 "rtfa": rtfa, "rtgb": rtgb,
+                                 "k1": k1, "k2": k2, "thread_number": thread_number,
+                                 "step_length": step_length,
+                                 "limit_count": limit_count,
+                                 "limit_min_length": limit_min_length,
+                                 "limit_max_length": limit_max_length,
+                                 "change_seed": change_seed,
+                                 "scaffold_or_not": scaffold_or_not,
+                                 "max_length": max_length, "min_length": min_length,
+                                 "soft_boundary": soft_boundary, "data_size": data_size,
+                                 "bootstrap": bootstrap_information[0], "bootstrap_number": bootstrap_information[1],
+                                 "reference_database": reference_database,
+                                 "filtered_out": filtered_out, "assembled_out": assembled_out,
+                                 "bootstrap_out": bootstrap_out,
+                                 "GM_results": GM_results,
+                                 "results_log": results_log,
+                                 "my_software_name": my_software_name,
+                                 "filter_path": filter_path, "assemble_path": assemble_path, "muscle_path": muscle_path
+                                 }
+
+
+    # my_pack_results_pipeline=PackResultsPipeline(configuration_information)
+    # my_pack_results_pipeline.get_csv_all_info()
+    my_pack_results_pipeline_main(configuration_information)
 
 
 
-    print("")  # 打印空行，为了好看
-
-
-
-# if __name__ == '__main__':
-#
-#     system=platform.system().lower()
-#     configuration_information={'mito_dir': 'mito_genes', 'cp_dir': 'cp_genes', 'tfa_dir': 'target_genes_from_fa', 'tgb_dir': 'target_genes_from_gb', 'data1': 'data1.fq', 'data2': 'data2.fq', 'results_information_excel': 'results_information.xlsx', 'reference_database': 'reference_database', 'filtered_out': 'filtered_out', 'assembled_out': 'assembled_out', 'assembled_log': 'assembled_log', 'iterated_out': 'iterated_out', 'bootstrap_out': 'bootstrap_out', 'GM_results': 'GM_results', 'blastn_out': 'blastn_out', 'filter_path': 'D:\\Happy_life_and_work\\scu\\python\\Gene_Miner\\eeeee7 xie2yu版本\\lib\\filter', 'assemble_path': 'D:\\Happy_life_and_work\\scu\\python\\Gene_Miner\\eeeee7 xie2yu版本\\lib\\minia', 'muscle_path': 'D:\\Happy_life_and_work\\scu\\python\\Gene_Miner\\eeeee7 xie2yu版本\\lib\\muscle3', 'makeblastdb_path': 'D:\\Happy_life_and_work\\scu\\python\\Gene_Miner\\eeeee7 xie2yu版本\\lib\\makeblastdb', 'blastn_path': 'D:\\Happy_life_and_work\\scu\\python\\Gene_Miner\\eeeee7 xie2yu版本\\lib\\blastn', 'my_software_name': 'GM', 'system': 'windows', 'whole_log': 'log.txt', 'bootstrap_data_set': 'bootstrap_data_set.fasta', 'bootstrap_concensusu': 'bootstrap_concensus.fasta'}
-#
-#
-#     out_dir=r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeee7 xie2yu版本\new3"
-#     thread_number=8
-#     kmer=43
-#     bootstrap_number="None"
-#     iterative_number ="None"
-#
-#     pack_the_results("mito",configuration_information,out_dir,bootstrap_number,iterative_number)
-#
-#
-#

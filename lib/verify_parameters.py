@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# @Time    : 2021/10/20 16:53
+# @Time    : 2022/5/8 10:05
 # @Author  : xiepulin
-# @File    : verify_parameters.py
+# @File    : geneminer.py
 # @Software: PyCharm
 
 
@@ -12,709 +12,285 @@ import subprocess
 import datetime
 import os
 import logging
-import traceback
-from Bio import SeqIO
-from Bio.SeqRecord import SeqRecord
-from tqdm import tqdm
-from concurrent import futures
 import re
 import multiprocessing
-from Bio import pairwise2
+import signal
+import threading
+import time
+import math
+import platform
+from collections import  defaultdict
+import shutil
+import random
+import gzip
+import gc
+import csv
+import copy
+from concurrent.futures import ProcessPoolExecutor
+from concurrent import futures
+
+'''
+导入第三方库（非标准库）
+'''
+from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
-import pandas as pd
-from openpyxl import load_workbook
-from basic import *
+from Bio import pairwise2
 
 
-###############################################
-'''
-检测系统环境部分
-(1)python版本
-'''
+# import PySimpleGUI as sg
+cur_path = os.path.realpath(sys.argv[0])  # 脚本当前路径
+father_path = os.path.dirname(cur_path)  # 脚本的父目录
+sys.path.append(os.path.join(father_path, "lib"))
 
+from lib.global_var import get_init,set_value,get_value
+from lib.basic import get_absolute,get_platform
+from lib.verify_parameters import check_input,check_k1,check_scaffold,check_datasize,check_k2,check_reference,check_change_seed,check_out_dir,check_limit_count,check_limit_length,check_step_length,check_max_min_length,check_bootstrap_parameter,check_soft_boundary,check_python_version,check_threads_number,print_parameter_information
+from lib.build_reference_database import my_bulid_reference_database_pipeline
+from lib.core_pipeline import CorePipeLine
+from lib.bootstrap_pipeline import my_bootstrap_pipeline_main
+from lib.pack_results import my_pack_results_pipeline_main
 
-##############################################
+my_version = 'Version 1.0b build 20220122'
+my_cite = 'Cite: https://github.com/happywithxpl/GeneMiner'
+get_init()  # 在basic 中已经申明过了
 
-
-
-def check_python_version():
-    this_python = sys.version_info[:2]
-    min_version = (3, 6)
-    if this_python < min_version:
-        message_parts = [
-            "GeneMiner does not work on Python {}.{}.".format(*this_python),            #*可以用来接受元组
-            "The minimum supported Python version is {}.{}.".format(*min_version),
-            "Please download the eligible version from https://www.python.org/.".format(*this_python)]
-        print("ERROR: " + " ".join(message_parts))
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
-
-
-##############################################################
-'''
-第一部分 检测各项参数是否正确,正确后打印参数
-(1)线程/进程数量的选择数量 -t
-(2)kmer 大小的检测 -k  
-2.2wordsize 大小的检测       过滤的kmer
-(3)软边界大小检测 -b
-(4)检测基因max_length,min_length 
-(5)参考基因组格式是否对应  2.1 -rtfa fasta;  -rtgb/-rcp/-rmito genebank格式  2.2选择了哪些参考基因组  2.3参考基因组是否有重名文件
-(6)数据量大小的校验 -n
-(7) 原始数据校验 即输入的序列是否是真实存在的 -1 -2 /-12 / -s 
-(8) 所有任务检测
-(9)自展检测参数检验
-(10)梯度逼近参数检验
-(11)输出文件夹检测
-(12)参考序列过滤策略 
-
-'''
-#############################################################
-
-
-'''
-1.检测线程数量默认为所有线程数量的1/4 默认不大于8
-'''
-def check_threads_number(thread):
-    thread_number = 1  # 初始化，至少一个
-    thread_number_all = multiprocessing.cpu_count()
-    if thread == "auto":
-        thread_number = int(thread_number_all * 0.75)
-        if thread_number == 0:
-            thread_number = 1
-        elif thread_number >= 8:
-            thread_number = 8
-        else:
-            thread_number=thread_number
-    else:
-        thread=str(thread)
-        if thread.isdigit():         #判断是否为纯数字
-            thread = int(thread)
-            if thread > thread_number_all:
-                print("Number of threads exceed the maximum, please check the -t parameter")
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-            elif thread <= 0:
-                print("Number of threads shuold exceed  0, please check the -t parameter")
-            else:
-                thread_number = thread
-
-        else:  #防止输入乱七八糟的东西
-            print("The number of threads must be an integer greater than 0, please check the -t parameter")
-            gv.set_value("my_gui_flag", 0)
-            sys.exit()
-
-    return thread_number
-
-'''
-2限定kmer的大小，[15，127]
-'''
-def check_kmer(kmer):
-    if kmer==31:
-        kmer=31
-    elif kmer<=0 or kmer>=127:
-        print("Kmer sizes range from 15 to 127, please check the -k parameter")
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
-    else:
-        kmer=kmer
-    return  kmer
-
-'''
-2.2限定wordsize的大小[16，32]
-'''
-def check_wordsize(wordsize):
-    max=32
-    min=16
-    if wordsize<min or wordsize>max:
-        print("Wordsize should be between 16 and 32, please check the -w parameter")
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
-    else:
-        wordsize=wordsize
-    return wordsize
-
-
-
-'''
-3 检测软边界 默认为75 范围为0~200之间
-'''
-def check_soft_boundary(soft_boundary):
-    soft_boundary = int(soft_boundary)
-    max = 200
-    min = 0
-    if soft_boundary > max or soft_boundary < min:
-        print(
-            "The length of the soft boundary is limited to 0 to 200, and the recommended length is 0.5 * reads_length, please check the -b parameter")
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
-    else:
-        soft_boundary = soft_boundary
-    return soft_boundary
-
-'''
-4 检测长度
-'''
-def check_max_min_length(max_length,min_length):
-    if max_length<= min_length:
-        print("The maximum gene length should be greater than the minimum gene length, please check the -max parameter ")
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
-
-    if max_length<=0:
-        print("The maximum gene length should be greater than zero, please check the -max parameter")
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
-
-    if min_length < 0:
-        print("The minimum gene length should not be less than zero, please check the -min parameter")
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
-
-'''
-5参考基因组格式是否对应  
-（1） -rtfa fasta;  -rtgb/-rcp/-rmito genebank格式  
-（2）选择了哪些参考基因组  
-（3）参考基因组是否有重名文件
-'''
-def check_ref_format(target_reference_fa, target_reference_gb,cp_reference, mito_reference):
-    ref_list = []
-    if target_reference_fa != None:
-        ref_list.append(target_reference_fa)
-    if target_reference_gb != None:
-        ref_list.append(target_reference_gb)
-    if cp_reference != None:
-        ref_list.append(cp_reference)
-    if mito_reference != None:
-        ref_list.append((mito_reference))
-
-    # 0代表文件夹 1代表文件
-    if target_reference_fa in ref_list:
-        flag = file_or_directory(target_reference_fa)
-        if flag == 0:
-            files = get_files(target_reference_fa)
-            flag = 0
-            Nonconforming_file = []  #记录不合格的文件
-            for file in files:
-                answer = is_fasta(file)  # answer 返回False/True
-                if answer == False:
-                    Nonconforming_file.append(file)
-                    flag = flag + 1
-
-            if flag != 0:
-                print("references should be in fasta format,please check -rtfa parameter")
-                Nonconforming_file = [os.path.basename(file) for file in Nonconforming_file]
-                if len(Nonconforming_file) == 1:
-                    Nonconforming_file = "".join(Nonconforming_file)
-                    print("{} is not in fasta format".format(Nonconforming_file))
-                else:
-                    Nonconforming_file = ",".join(Nonconforming_file)
-                    print("{} are not in fasta format".format(Nonconforming_file))
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-
-            file_name_list = [os.path.basename(file) for file in files]
-            for i in file_name_list:
-                flag = 0
-                if file_name_list.count(i) > 1:
-                    print("{0} appears repeatedly. Ensure that the file name is unique".format(i))
-                    file_name_list.remove(i)
-                    flag = flag + 1
-            if flag != 0:
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-
-        if flag == 1:
-            answer = is_fasta(target_reference_fa)
-            if answer == False:
-                print("references should be in fasta format,please check -rtfa parameter")
-                print("{0} is not in fasta format".format(target_reference_fa))
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-
-    if target_reference_gb in ref_list:
-        flag = file_or_directory(target_reference_gb)
-        if flag == 0:
-            files = get_files(target_reference_gb)
-            flag = 0
-            Nonconforming_file = []
-            for file in files:
-                answer = is_gb(file)  # answer 返回False/True
-                if answer == False:
-                    Nonconforming_file.append(file)
-                    flag = flag + 1
-
-            if flag != 0:
-                print("references should be in GenBank-format, please check -rtgb parameter")
-                Nonconforming_file = [os.path.basename(file) for file in Nonconforming_file]
-                if len(Nonconforming_file) == 1:
-                    Nonconforming_file = "".join(Nonconforming_file)
-                    print("{} is not in GenBank-format".format(Nonconforming_file))
-                else:
-                    Nonconforming_file = ",".join(Nonconforming_file)
-                    print("{} are not in GenBank-format".format(Nonconforming_file))
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-
-            file_name_list = [os.path.basename(file) for file in files]
-            for i in file_name_list:
-                flag = 0
-                if file_name_list.count(i) > 1:
-                    print("{0} appears repeatedly. Ensure that the file name is unique".format(i))
-                    file_name_list.remove(i)
-                    flag = flag + 1
-            if flag != 0:
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-
-        if flag == 1:
-            answer = is_gb(target_reference_gb)
-            if answer == False:
-                print("references should be in GenBank-format, please check -rtgb parameter")
-                print("{0} is not in GenBank-format".format(target_reference_gb))
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-
-    if cp_reference in ref_list:
-        flag = file_or_directory(cp_reference)
-        if flag == 0:
-            files = get_files(cp_reference)
-            flag = 0
-            Nonconforming_file = []
-            for file in files:
-                answer = is_gb(file)  # answer 返回False/True
-                if answer == False:
-                    Nonconforming_file.append(file)
-                    flag = flag + 1
-
-            if flag != 0:
-                print("cp_reference should be in GenBank-format, please check -rcp parameter")
-                Nonconforming_file = [os.path.basename(file) for file in Nonconforming_file]
-                if len(Nonconforming_file) == 1:
-                    Nonconforming_file = "".join(Nonconforming_file)
-                    print("{} is not in GenBank-format ".format(Nonconforming_file))
-                else:
-                    Nonconforming_file = ",".join(Nonconforming_file)
-                    print("{} are not in GenBank-format".format(Nonconforming_file))
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-
-            file_name_list = [os.path.basename(file) for file in files]
-            for i in file_name_list:
-                flag = 0
-                if file_name_list.count(i) > 1:
-                    print("{0} appears repeatedly. Ensure that the file name is unique".format(i))
-                    file_name_list.remove(i)
-                    flag = flag + 1
-            if flag != 0:
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-
-        if flag == 1:
-            answer = is_gb(cp_reference)
-            if answer == False:
-                print("cp_reference should be in GenBank-format, please check -rcp parameter")
-                print("{0} is not in  GenBank-format".format(cp_reference))
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-
-    if mito_reference in ref_list:
-        flag = file_or_directory(mito_reference)
-        if flag == 0:
-            files = get_files(mito_reference)
-            flag = 0
-            Nonconforming_file = []     #记录不合格的文件
-            for file in files:
-                answer = is_gb(file)  # answer 返回False/True
-                if answer == False:
-                    Nonconforming_file.append(file)
-                    flag = flag + 1
-
-            if flag != 0:
-                print("mito_references should be in GenBank-format, please check -rmito parameter")
-                Nonconforming_file = [os.path.basename(file) for file in Nonconforming_file]
-                if len(Nonconforming_file) == 1:
-                    Nonconforming_file = "".join(Nonconforming_file)
-                    print("{} is not in GenBank-format".format(Nonconforming_file))
-                else:
-                    Nonconforming_file = ",".join(Nonconforming_file)
-                    print("{} are not in GenBank-format".format(Nonconforming_file))
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-
-            file_name_list = [os.path.basename(file) for file in files]
-            for i in file_name_list:
-                flag = 0
-                if file_name_list.count(i) > 1:
-                    print("{0} appears repeatedly. Ensure that the file name is unique".format(i))
-                    file_name_list.remove(i)
-                    flag = flag + 1
-            if flag != 0:
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-
-        if flag == 1:
-            answer = is_gb(mito_reference)
-            if answer == False:
-                print("mito_references should be in GenBank-format, please check -rmito parameter")
-                print("{0} is not in  GenBank-format".format(mito_reference))
-                gv.set_value("my_gui_flag", 0)
-                sys.exit()
-
-
-'''
-6 检测数据量大小 -n
-根据后缀确定文件类型，根据用户输入行数，提取reads。产生data1.fq，data2.fq
-目前做的简单处理， 将-12(paired_end) 和-s(single_read) -1 -2 都使用相同的算法处理
-'''
-def check_datasize(data_size):
-    data_size=str(data_size) # 先把数字或者"all" 都转为字符串处理   防止'int' object has no attribute 'isdigit'
-
-
-    min_data_size = 1000000
-    if data_size.lower()=="all":
-        ultimate_data_size=data_size.lower()
-        return ultimate_data_size
-
-    elif data_size.isdigit():
-        data_size=int(data_size)
-        if data_size < min_data_size:
-            print(
-                "Please check -n parameter. for better results, input data should not be less than {0} lines.".format(
-                    min_data_size))
-            gv.set_value("my_gui_flag", 0)
-            sys.exit()
-        else:
-            ultimate_data_size = data_size - data_size % 100000  # 10w起步，保证是4的倍数
-        return ultimate_data_size
-    else:
-        print("Please check -n parameter, it must be an integer greater than {} or 'all' ".format(min_data_size))
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
-
-
-'''
-7 检测 -1 -2  -12  -single 是否真实存在，是否正确选择
-'''
-def check_raw_data_type(data1, data2, paired, single):
+def main(args):
+    t1=time.time()
+    set_value("my_gui_flag", 1)  # 用于判定GUI是否处于运行状态，1代表运行，0代表没有运行
     '''
-    必须三选一，且只能三选一
-    -1 -2 必须同时存在
-    data1, data2, paired, single 必须真实存在
+    从程序外获得的参数信息
     '''
-    if (data1 == None or data2 == None) and paired == None and single == None:
-        print("Please select one of the parameters from [-1 -2], [-s] and  [-12]")
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
-    if (data1 == None and data2 != None) or (data1 != None and data2 == None):
-        print("You must select both the -1 and -2 parameters")
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
-    flag = 0
-    raw_data_list = []  # 记录data1,data2,paired,single的参数选择
-    if data1 != None and data2 != None:
-        raw_data_list.append(data1)
-        raw_data_list.append(data2)
-        flag = flag + 1
-    if paired != None:
-        flag = flag + 1
-        raw_data_list.append(paired)
-    if single != None:
-        flag = flag + 1
-        raw_data_list.append(single)
-    if flag != 1:
-        print("Only one set of parameter can be selected from [-1 -2], [-s] and [-12]")
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
+    data1 = args.data1
+    data2 = args.data2
+    single = args.single
+    target_reference_fa = args.target_reference_fa
+    target_reference_gb = args.target_reference_gb
+    out_dir = args.out
+    thread_number = args.thread
+    k1 = args.kmer1
+    k2 = args.kmer2
+    step_length = args.step_length
+    limit_count = args.limit_count
+    limit_min_length = args.limit_min_length
+    limit_max_length = args.limit_max_length
+    scaffold_or_not = args.scaffold
 
-    # print(raw_data_list)
-    flag = 0
-    for i in raw_data_list:
-        if is_exist(i) == 0:
-            print("{}:the file does not exist".format(i))
-            flag = flag + 1
-    if flag != 0:
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
+    change_seed = args.change_seed
+    soft_boundary = args.soft_boundary
+    max_length = args.max
+    min_length = args.min
+    data_size = args.data_size
+    bootstrap_number = args.bootstrap_number
+    quiet=False
 
 
-    '''
-    检测原始数据的格式类型 fq .gz .bz2
-    '''
-    if data1 in raw_data_list and data2 in raw_data_list:
-        if "fastq.gz" in data1 or "fq.gz" in data1 or ".gz" in data1:  # fastq.gz/fastq.bz2 包含了fastq所以要进一步判断
-            type1 = 1
-        elif "fastq.bz2" in data1 or "fq.bz2" in data1 or "bz2" in data1:
-            type1 = 2
-        elif "fastq" in data1 or ".fq" in data1:
-            type1 = 3
-        else:
-            print("-1  need .fq/.fastq/.fq.gz /.fq.bz2 /.fastq.gz /.fastq.bz2 as the suffix")
-            gv.set_value("my_gui_flag", 0)
-            sys.exit(1)
+    data1 = get_absolute(data1)
+    data2 = get_absolute(data2)
+    single = get_absolute(single)
+    out_dir = get_absolute(out_dir)
+    target_reference_fa = get_absolute(target_reference_fa)
+    target_reference_gb = get_absolute(target_reference_gb)
 
-        if "fastq.gz" in data2 or "fq.gz" in data2 or ".gz" in data2:  # fastq.gz/fastq.bz2 包含了fastq所以要进一步判断
-            type2 = 1
-        elif "fastq.bz2" in data2 or "fq.bz2" in data2 or "bz2" in data2:
-            type2 = 2
-        elif "fastq" in data2 or ".fq" in data2:
-            type2 = 3
-        else:
-            print(" -2 need .fq/.fastq/.fq.gz /.fq.bz2 /.fastq.gz /.fastq.bz2 as the suffix")
-            gv.set_value("my_gui_flag", 0)
-            sys.exit(1)
+    # 校验信息
+    check_python_version()
+    out_dir = check_out_dir(out_dir)  # 输出文件夹检测
+    set_value("out_dir", out_dir)
 
-        if type1 != type2:
-            print("data1 reads and data2 reads should be the same format ")
-            gv.set_value("my_gui_flag", 0)
-            sys.exit(1)
-        else:
-            type = type1
+    check_input(data1, data2, single)
+    check_reference(target_reference_fa, target_reference_gb)
+    thread_number = check_threads_number(thread_number)  # 确定线程数量
+    k1 = check_k1(k1)  # 检测k1 filter
+    k2 = check_k2(k2)  # 检测k1 filter
+    step_length = check_step_length(step_length)  # 步长
+    limit_count = check_limit_count(limit_count)  # 限定reads中最低kmercount
+    limit_min_length, limit_max_length = check_limit_length(limit_min_length,
+                                                            limit_max_length)  # 限定组装contig最短百分比长度，较于ref
+    change_seed = check_change_seed(change_seed)  # 种子更换策略最大次数
+    scaffold_or_not = check_scaffold(scaffold_or_not)  # 是否做scaffold
+    soft_boundary = check_soft_boundary(soft_boundary)  # 检测软边界
+    check_max_min_length(max_length, min_length)  # 检测基因最大最小长度
+    data_size = check_datasize(data_size)  # 检测数据量 大小
+    bootstrap_information = check_bootstrap_parameter(bootstrap_number)  # 自展次数
 
-    elif paired in raw_data_list:
-        if "fastq.gz" in paired or "fq.gz" in paired or ".gz" in paired:  # fastq.gz/fastq.bz2 包含了fastq所以要进一步判断
-            type = 1
-        elif "fastq.bz2" in paired or "fq.bz2" in paired or "bz2" in paired:
-            type = 2
-        elif "fastq" in paired or ".fq" in paired:
-            type = 3
-        else:
-            print("-12  need .fq/.fastq/.fq.gz /.fq.bz2 /.fastq.gz /.fastq.bz2 as the suffix")
-            gv.set_value("my_gui_flag", 0)
-            sys.exit(1)
+    # 脚本信息
+    cur_path = os.path.realpath(sys.argv[0])  # 脚本当前路径
+    cur_path = os.path.dirname(cur_path)  # 脚本的父目录,father_path 覆盖
+    filter_path = os.path.join(cur_path, "lib", "my_filter.py")
+    assemble_path = os.path.join(cur_path, "lib", "my_assemble.py")
+    # 文件夹目录
+    reference_database = "reference_database"
+    filtered_out = "filtered_out"
+    assembled_out = "assembled_out"
+    bootstrap_out = "bootstrap_out"
+    GM_results = "GM_results"
 
-    else:
-        if "fastq.gz" in single or "fq.gz" in single or ".gz" in single:  # fastq.gz/fastq.bz2 包含了fastq所以要进一步判断
-            type = 1
-        elif "fastq.bz2" in single or "fq.bz2" in single or "bz2" in single:
-            type = 2
-        elif "fastq" in single or ".fq" in single:
-            type = 3
-        else:
-            print("-s  need .fq/.fastq/.fq.gz /.fq.bz2 /.fastq.gz /.fastq.bz2 as the suffix")
-            gv.set_value("my_gui_flag", 0)
-            sys.exit(1)
+    # 文件目录
+    results_log = "results.log"  # bootstarp  将所有Bootstrap结果写在一起的fasta
+    bootstrap_data_set = "bootstrap_data_set.fasta"
+    bootstrap_concensus = "bootstrap_concensus.fasta"  # 导出共识序列
 
-    raw_data_dict = {type: raw_data_list}
+    # 其他信息
+    my_software_name = "GM"
+    system = get_platform()
 
-    return raw_data_dict                              ##raw_data_dict={3:['gw1.fq']}}
+    printinfo = {"project name": out_dir,
+                 "data1": data1, "data2": data2, "single": single,
+                 "reference (fa)": target_reference_fa, "reference (gb)": target_reference_gb,
+                 "k1": k1, "k2": k2, "threads": thread_number,
+                 "step length": step_length,
+                 "limit count": limit_count,
+                 "limit min ratio": limit_min_length,
+                 "limit max ratio": limit_max_length,
+                 "change seed": change_seed,
+                 "max length": max_length, "min length": min_length,
+                 "soft boundary": soft_boundary, "data size": data_size,
+                 "bootstrap": bootstrap_information[0],
+                 "bootstrap number": bootstrap_information[1],
+                 }
+    configuration_information = {"out_dir": out_dir,
+                                 "data1": data1, "data2": data2, "single": single,
+                                 "rtfa": target_reference_fa, "rtgb": target_reference_gb,
+                                 "k1": k1, "k2": k2, "thread_number": thread_number,
+                                 "step_length": step_length,
+                                 "limit_count": limit_count,
+                                 "limit_min_length": limit_min_length, #limit_min_ratio
+                                 "limit_max_length": limit_max_length, #limit_max_ratio
+                                 "scaffold_or_not": scaffold_or_not,
+                                 "change_seed": change_seed,
+                                 "max_length": max_length, "min_length": min_length,
+                                 "soft_boundary": soft_boundary, "data_size": data_size,
+                                 "bootstrap": bootstrap_information[0], "bootstrap_number": bootstrap_information[1],
+                                 "reference_database": reference_database,
+                                 "filtered_out": filtered_out, "assembled_out": assembled_out,
+                                 "bootstrap_out": bootstrap_out,
+                                 "GM_results": GM_results,
+                                 "results_log": results_log,
+                                 "bootstrap_data_set": bootstrap_data_set,
+                                 "bootstrap_concensus": bootstrap_concensus,
+                                 "my_software_name": my_software_name,
+                                 "system": system,
+                                 "filter_path": filter_path, "assemble_path": assemble_path,
+                                 "quiet":quiet
 
+                                 }
 
+    print_parameter_information(printinfo)
 
-'''
-8 检测所有任务
-'''
+    # 构建参考序列基因库
+    my_bulid_reference_database_pipeline(configuration_information)
+    # 核心流程 过滤 拼接 校验
+    my_core_pipeline = CorePipeLine(configuration_information)
+    my_core_pipeline.filter_pipeline()
+    my_core_pipeline.assemble_pipeline()
+    my_core_pipeline.get_results_contig()
 
-def check_whole_task(target_reference_fa, target_reference_gb, cp_reference, mito_reference):
-    task_pool = []  # 任务池
-    task_pool_exist = []  # 任务是否存在的池子
-    if target_reference_fa == None and target_reference_gb == None and cp_reference == None and mito_reference == None:
-        print("Please select at least one from -rtfa, -rtgb, -rcp and -rmito")
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
-    if target_reference_fa != None:
-        task = "target_gene_from_fa"
-        task_pool.append(task)
-        task_pool_exist.append(target_reference_fa)
-    if target_reference_gb != None:
-        task = "target_gene_from_gb"
-        task_pool.append(task)
-        task_pool_exist.append(target_reference_gb)
-    if cp_reference != None:
-        task = "cp_gene"
-        task_pool.append(task)
-        task_pool_exist.append(cp_reference)
-    if mito_reference != None:
-        task = "mito_gene"
-        task_pool.append(task)
-        task_pool_exist.append(mito_reference)
+    # 自展检测
+    if bootstrap_number:
+        my_bootstrap_pipeline_main(configuration_information)
 
-    flag = 0
-    # print(task_pool)
-    # print(task_pool_exist)
-    for i in task_pool_exist:
-        if is_exist(i) == 0:
-            print("{} : does not exist".format(i))
-            flag = flag + 1
-    if flag != 0:
-        gv.set_value("my_gui_flag", 0)
-        sys.exit()
+    my_pack_results_pipeline_main(configuration_information)
 
+    t2=time.time()
 
-    return task_pool
+    whole_time=format(t2-t1,"6.2f")
 
-
-
-
-'''
-9.检测自展参数
-'''
-def check_bootstrap_parameter(bootstrap_number):
-    if bootstrap_number==None or bootstrap_number=="None":
-        flag = "No"
-        bootstrap_number = "None"
-        bootstrap_information = [flag, bootstrap_number]
-
-    else:
-        if  bootstrap_number <= 0:
-            print("The number must be greater than 0, please check the -bn parameter")
-            gv.set_value("my_gui_flag", 0)
-            sys.exit()
-        else:
-            flag = "Yes"
-            bootstrap_number = bootstrap_number
-            bootstrap_information = [flag, bootstrap_number]
-
-    return bootstrap_information
-
-
-'''
-10.检测梯度逼近参数
-'''
-def check_iterative_parameter(iterative_number):
-    if iterative_number==None or iterative_number=="None":
-        flag = "No"
-        iterative_number = "None"
-        iterative_information = [flag, iterative_number]
-
-    else:
-        if  iterative_number <= 0:
-            print("The number must be greater than 0, please check the -in parameter")
-            gv.set_value("my_gui_flag", 0)
-            sys.exit()
-        else:
-            flag = "Yes"
-            iterative_number = iterative_number
-            iterative_information = [flag, iterative_number]
-
-    return iterative_information
+    print("whole time: {}s".format(whole_time))
 
 
 
 
 
-'''
-11.检测输出文件夹
-'''
+if __name__ == "__main__":
+    # signal.signal(signal.SIGINT, signal_handler)  # 检测函数终止退出（ctrl+c） #必须放在主程序中
+    # multiprocessing.freeze_support()  # windows上Pyinstaller打包多进程程序需要添加特殊指令
+    # set_value("my_gui_flag", 0)  # 用于判定脚本是否跑完，还可以防止run双击覆盖事件
+    parser = argparse.ArgumentParser(usage="%(prog)s <-1 -2|-s>  <-rtfa|rtgb>  <-o>  [options]",
+                                     description="GeneMiner: a software for extracting phylogenetic markers from next generation sequencing data\n"
+                                                 "Version: 1.0.0\n"
+                                                 "Copyright (C) 2022 Pulin Xie\n"
+                                                 "Please contact <xiepulin@stu.edu.scu.cn> if you have any questions",
 
+                                     formatter_class=argparse.RawTextHelpFormatter,
+                                     # help信息中会自动取消掉换行符和空格，argparse.RawTextHelpFormatter
+                                     # 可以将help信息恢复为原始的文本信
 
-'''
-windows下额外的输出文件夹检测
-'''
-def check_out_dir_GUI(out,system):
-    if system=="windows":
-        #pysimplegui 会把输入数据转换为str格式
-        if out=='' or out=="auto"  or out==None:  #out==None 针对图形界面用户reset之后，out_dir忘记输入的情况
-            print("You should specify an output folder, please check the -o parameter")
-            gv.set_value("my_gui_flag", 0)
-            sys.exit()
+                                     # epilog="xiepulin", #参数说明之后，显示程序的其他说明
+                                     # add_help=False   #禁用帮助信息
+                                     )
+    # 原始数据输入部分
+    basic_option_group = parser.add_argument_group(title="Basic option")
+    basic_option_group.add_argument("-1", dest="data1",
+                                    help="File with forward paired-end reads (*.fq/*.fq.gz)", metavar="")
+    basic_option_group.add_argument("-2", dest="data2",
+                                    help="File with reverse paired-end reads (*.fq/*.fq.gz)", metavar="")
 
+    basic_option_group.add_argument("-s", "--single", dest="single",
+                                    help="File with unpaired reads (*.fq/*.fq.gz).", metavar="")
+    basic_option_group.add_argument("-o", "--out", dest="out", help="Output folder",
+                                    metavar="", required=True)
 
-
-def check_out_dir(out):
-    nowTime = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    result_name = "GM" + "_" + nowTime
-
-    if out != "auto":
-        if os.path.isdir(out):
-            if len(os.listdir(out))==0:  #文件夹存在但里面为空是能够使用的
-                out_dir_name=out
-            else:
-                print("{} already exists and there are files under the folder, please check the -o parameter".format(out))
-                gv.set_value("my_gui_flag", 0)
-                sys.exit(0)
-        else:
-            out_dir_name=out
-
-    else:
-        out_dir_name = result_name
-
-    return out_dir_name
+    basic_option_group.add_argument("-rtfa", dest="target_reference_fa",
+                                    help="References of target sequences, only support fasta format", metavar="<file|dir>")
+    basic_option_group.add_argument("-rtgb", dest="target_reference_gb",
+                                    help="References of target sequences, only support GenBank format",
+                                    metavar="<file|dir>")
 
 
 
-'''
-12 参考序列过滤策略检测
-'''
+    # 高级参数部分
+    advanced_option_group = parser.add_argument_group(title="Advanced option")
 
-'''
-两类数据，一类是txt，一类是s1,s2,s3,s4,s5
-'''
-def check_reference_filtering_strategy(sf):
-    choose_data=["s1","s2","s3","s4","s5"]
-    if sf ==None:
-        sf= "s1"
-        return sf
+    advanced_option_group.add_argument("-k1", "--kmer1", dest="kmer1",
+                                       help="Length of kmer for filtering reads [default = 29]",
+                                       default=29,
+                                       type=int, metavar="")
+    advanced_option_group.add_argument("-k2", "--kmer2", dest="kmer2",
+                                       help="Length of kmer for assembling reads [default = 41]",
+                                       default=41,
+                                       type=int, metavar="")
 
-    file_flag = os.path.isfile(sf)
-    if file_flag==True:
-        flag=is_txt_file(sf)
-        if flag==0:
-            message = "You can choose one from ['s1', 's2', 's3', 's4', 's5'] or specify a plain text file with 'txt' as the suffix, please check the -sf parameter"
-            print(message, flush=True)
-            gv.set_value("my_gui_flag", 0)
-            sys.exit()
-        else:
-            sf=sf
+    advanced_option_group.add_argument("-d", "--data", dest="data_size",
+                                       help="Specify the number of reads to reduce raw data. If you want to use all the data, you can set as 'all' [default = 'all']",
+                                       default='all', metavar="")
 
-    elif file_flag==False:
-        if sf in choose_data:
-            sf=sf
-        else:
-            message = "You can choose one from ['s1', 's2', 's3', 's4', 's5'] or specify a plain text file with 'txt' as the suffix， please check the -sf parameter "
-            print(message, flush=True)
-            gv.set_value("my_gui_flag", 0)
-            sys.exit()
-    else:
-        pass
-    return  sf
+    advanced_option_group.add_argument("-step_length", metavar="", dest="step_length", type=int,
+                                       help="Step length of the sliding window on the reads [default = 4]", default=4)
+    advanced_option_group.add_argument('-limit_count', metavar='', dest='limit_count',
+                                       help='''limit of k-mer count [default=auto]''', required=False,
+                                       default='auto')
+    advanced_option_group.add_argument('-limit_min_ratio', metavar='', dest='limit_min_length', type=float,
+                                       help='''The minimum ratio of contig length to reference average length [default = 1.0]''',
+                                       required=False, default=1)
+    advanced_option_group.add_argument('-limit_max_ratio', metavar='', dest='limit_max_length', type=float,
+                                       help='''The maximum ratio of contig length to reference average length [default = 2.0]''',
+                                       required=False, default=2)
 
+    advanced_option_group.add_argument("-change_seed", metavar="", dest="change_seed", type=int,
+                                       help='''Times of changing seed [default = 32]''', required=False,
+                                       default=32)
+    advanced_option_group.add_argument('-scaffold', metavar="", dest="scaffold", type=str, help='''Make scaffold''',
+                                       default=False)
+    advanced_option_group.add_argument("-max", dest="max", help="The maximum length of contigs to be retained [default = 5000]",
+                                       default=5000,
+                                       type=int, metavar="")
+    advanced_option_group.add_argument("-min", dest="min", help="The minimum length of contigs to be retained [default = 300]",
+                                       default=300,
+                                       type=int, metavar="")
+    advanced_option_group.add_argument("-t", "--thread",
+                                       help="Number of threads [default = 'auto']",
+                                       default="auto", metavar="")
+    advanced_option_group.add_argument("-b", "--boundary", dest="soft_boundary",
+                                       help="The length of the extension along both sides of the target sequence [default = 75]",
+                                       default=75, type=int, metavar="")
 
+    advanced_option_group.add_argument("-bn", "--bootstrap", dest="bootstrap_number", type=int,
+                                       help="Number of resampling based on nucleotide substitution model",
+                                       metavar="")
+    args = parser.parse_args()
 
-
-
-
-
-# s=None
-# m="s1"
-# n="m2"
-# ll="s2"
-# lsl=r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeee6 重构版本  大修 identity\1.txt"
-# oo=check_reference_filtering_strategy(lsl)
-# print(oo)
-
-
-
-
-'''
-参数校验合格之后，打印参数表
-在extract_raw_data之前
-'''
-def print_parameter_information(parameter_information_dict):
-    temp={}
-    for key,value in parameter_information_dict.items():
-        if parameter_information_dict[key] != None:
-            temp[key] = value
-    message_all = []
-    for key, value in temp.items():
-        message = "{0:<22}:{1:<}".format(key, value) #左对齐 22位宽  target_reference最长 16位宽
-        message_all.append(message)
-
-    symbol="-"
-    print(symbol*22,flush=True)
-    header="GeneMiner: a software for extracting phylogenetic markers from next generation sequencing data\n" \
-           "Version: 1.0\n" \
-           "Copyright (C) 2021 Pulin Xie\n" \
-           "Please contact <xiepulin@stu.edu.scu.cn>, if you have any bugs or questions"
-
-    print(header,flush=True)
-    for i in message_all:
-        # i=i.replace("_"," ")
-        i=i.capitalize()#首字母大写
-        print(i, flush=True)
-    print(symbol * 22, flush=True)
-
-
-
+    main(args)
+    # geneminer_GUI()
 
 
 

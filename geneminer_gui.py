@@ -5,8 +5,6 @@
 # @File    : geneminer.py
 # @Software: PyCharm
 
-
-
 import argparse
 import sys
 import subprocess
@@ -17,318 +15,191 @@ import re
 import multiprocessing
 import signal
 import threading
-
+import time
+import math
+import platform
+from collections import  defaultdict
+import shutil
+import random
+import gzip
+import gc
+import csv
+import copy
+from concurrent.futures import ProcessPoolExecutor
+from concurrent import futures
 
 '''
 导入第三方库（非标准库）
 '''
-import pandas as pd
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 from Bio import pairwise2
-from openpyxl import load_workbook
-from tqdm import tqdm
-from concurrent import futures
+
 import PySimpleGUI as sg
-
-my_version = 'Version 1.0b build 20220122'
-my_cite = 'Cite: https://github.com/sculab/Geneminer '
-# current_path = os.path.abspath(__file__)  # 脚本当前路径
-# father_path = os.path.abspath(os.path.dirname(current_path))  # 脚本的父目录
-# sys.path.append(os.path.join(father_path, "lib"))  # filter ，assemble的软件存放在脚本同级目录下的lib
-
-# cur_path = os.getcwd()
-# sys.path.append(os.path.join(cur_path,"lib"))  # filter ，assemble的软件存放在脚本同级目录下的lib
 
 
 cur_path = os.path.realpath(sys.argv[0])  # 脚本当前路径
 father_path = os.path.dirname(cur_path)  # 脚本的父目录
-# filter ，assemble的软件存放在脚本同级目录下的lib
 sys.path.append(os.path.join(father_path, "lib"))
 
-from lib.pack_results import pack_the_results
-from lib.bootstrap_verify_pipeline import *
-from lib.iterative_pipeline import *
-from lib.core_pipeline import *
-from lib.build_reference_database import *
-from lib.extract_data import *
-from lib.verify_parameters import *
-from lib.basic import *
-gv._init_()  # 在basic 中已经申明过了
+from lib.global_var import get_init,set_value,get_value
+from lib.basic import get_absolute,get_platform,ML_str_re
+from lib.verify_parameters import check_input,check_k1,check_scaffold,check_datasize,check_k2,check_reference,check_change_seed,check_out_dir,check_limit_count,check_limit_length,check_step_length,check_max_min_length,check_bootstrap_parameter,check_soft_boundary,check_python_version,check_threads_number,print_parameter_information,signal_handler
+from lib.build_reference_database import my_bulid_reference_database_pipeline
+from lib.core_pipeline import CorePipeLine
+from lib.bootstrap_pipeline import my_bootstrap_pipeline_main
+from lib.pack_results import my_pack_results_pipeline_main
+
+my_version = 'Version 1.0b build 20220122'
+my_cite = 'Cite: https://github.com/happywithxpl/GeneMiner'
+get_init()  # 在basic 中已经申明过了
 
 
-def get_filter_assemble_software_path():
-    cur_path = os.path.realpath(sys.argv[0])  # 脚本当前路径
-    cur_path = os.path.dirname(cur_path)  # 脚本的父目录,father_path 覆盖
-
-    filter_path = os.path.join(cur_path, "lib", "filter")
-    minia_path = os.path.join(cur_path, "lib", "minia")
-    # muscle_path=os.path.join(cur_path,"lib","muscle")  #muscle5
-    muscle_path = os.path.join(cur_path, "lib", "muscle3")  # muscle3
-    makeblastdb_path = os.path.join(cur_path, "lib", "makeblastdb")
-    blastn_path = os.path.join(cur_path, "lib", "blastn")
-
-    return [filter_path, minia_path, muscle_path, makeblastdb_path, blastn_path]
-
-
-def get_configuration_information():
-    configuration_information = {}
-    # 一级目录
-    mito_dir = "mito_genes"
-    cp_dir = "cp_genes"
-    tfa_dir = "target_genes_from_fa"
-    tgb_dir = "target_genes_from_gb"
-    data1 = "data1.fq"
-    data2 = "data2.fq"
-    results_information_excel = "results_information.xlsx"
-    # 二级目录
-    reference_database = "reference_database"
-    filtered_out = "filtered_out"
-    assembled_out = "assembled_out"
-    assembled_log = "assembled_log"
-    iterated_out = "iterated_out"
-    bootstrap_out = "bootstrap_out"
-    GM_results = "GM_results"
-    blastn_out = "blastn_out"
-
-    # 位置信息
-    path = get_filter_assemble_software_path()
-    filter_path = path[0]  # filter绝对路径
-    assemble_path = path[1]  # minia绝对路径
-    muscle_path = path[2]  # muscle绝对路径
-    makeblastdb_path = path[3]  # makeblastdb_path 绝对路径
-    blastn_path = path[4]  # blastn 绝对路径
-    # 其他信息
-    my_software_name = "GM"
-    system = get_platform()
-    whole_log = "log.txt"
-    # bootstarp  将所有Bootstrap结果写在一起的fasta
-    bootstrap_data_set = "bootstrap_data_set.fasta"
-    bootstrap_concensus = "bootstrap_concensus.fasta"  # 导出共识序列
-    # 构建配置信息
-    configuration_information["mito_dir"] = mito_dir
-    configuration_information["cp_dir"] = cp_dir
-    configuration_information["tfa_dir"] = tfa_dir
-    configuration_information["tgb_dir"] = tgb_dir
-    configuration_information["data1"] = data1
-    configuration_information["data2"] = data2
-    configuration_information["results_information_excel"] = results_information_excel
-    configuration_information["reference_database"] = reference_database
-    configuration_information["filtered_out"] = filtered_out
-    configuration_information["assembled_out"] = assembled_out
-    configuration_information["assembled_log"] = assembled_log
-    configuration_information["iterated_out"] = iterated_out
-    configuration_information["bootstrap_out"] = bootstrap_out
-    configuration_information["GM_results"] = GM_results
-    configuration_information["blastn_out"] = blastn_out
-    configuration_information["filter_path"] = filter_path
-    configuration_information["assemble_path"] = assemble_path
-    configuration_information["muscle_path"] = muscle_path
-    configuration_information["makeblastdb_path"] = makeblastdb_path
-    configuration_information["blastn_path"] = blastn_path
-    configuration_information["my_software_name"] = my_software_name
-    configuration_information["system"] = system
-    configuration_information["whole_log"] = whole_log
-    configuration_information["bootstrap_data_set"] = bootstrap_data_set
-    configuration_information["bootstrap_concensusu"] = bootstrap_concensus
-
-    return configuration_information
-# print(get_configuration_information())
 
 
 def main(args):
-    # signal.signal(signal.SIGINT, signal_handler)  #检测函数终止退出（ctrl+c）
-    gv.set_value("my_gui_flag", 1)  # 用于判定GUI是否处于运行状态，1代表运行，0代表没有运行
-
-    configuration_information = get_configuration_information()
+    t1=time.time()
+    set_value("my_gui_flag", 1)  # 用于判定GUI是否处于运行状态，1代表运行，0代表没有运行
     '''
     从程序外获得的参数信息
     '''
     data1 = args.data1
     data2 = args.data2
-    paired = args.paired
     single = args.single
     target_reference_fa = args.target_reference_fa
     target_reference_gb = args.target_reference_gb
-    cp_reference = args.cp_reference
-    mito_reference = args.mito_reference
     out_dir = args.out
+    thread_number = args.thread
+    k1 = args.kmer1
+    k2 = args.kmer2
+    step_length = args.step_length
+    limit_count = args.limit_count
+    limit_min_length = args.limit_min_length
+    limit_max_length = args.limit_max_length
+    scaffold_or_not = args.scaffold
+
+    change_seed = args.change_seed
+    soft_boundary = args.soft_boundary
     max_length = args.max
     min_length = args.min
-    soft_boundary = args.soft_boundary
-    data_size = args.number
-    kmer = args.kmer
-    wordsize = args.wordsize
-    thread = args.thread
+    data_size = args.data_size
     bootstrap_number = args.bootstrap_number
-    iterative_number = args.iterative_number
-    sf = args.reference_filtering
+    quiet=False
+
 
     data1 = get_absolute(data1)
     data2 = get_absolute(data2)
-    paired = get_absolute(paired)
-    paired = get_absolute(paired)
     single = get_absolute(single)
+    out_dir = get_absolute(out_dir)
     target_reference_fa = get_absolute(target_reference_fa)
     target_reference_gb = get_absolute(target_reference_gb)
-    cp_reference = get_absolute(cp_reference)
-    mito_reference = get_absolute(mito_reference)
 
     # 校验信息
     check_python_version()
-    system = get_platform().lower()
-    check_out_dir_GUI(out_dir, system)
     out_dir = check_out_dir(out_dir)  # 输出文件夹检测
-    out_dir = get_absolute(out_dir)
-    gv.set_value("out_dir", out_dir)
-    thread_number = check_threads_number(thread)  # 确定线程数量
-    kmer = check_kmer(kmer)  # 检测kmer
-    wordsize = check_wordsize(wordsize)  # 检测wordsize
+    set_value("out_dir", out_dir)
+
+    check_input(data1, data2, single)
+    check_reference(target_reference_fa, target_reference_gb)
+    thread_number = check_threads_number(thread_number)  # 确定线程数量
+    k1 = check_k1(k1)  # 检测k1 filter
+    k2 = check_k2(k2)  # 检测k1 filter
+    step_length = check_step_length(step_length)  # 步长
+    limit_count = check_limit_count(limit_count)  # 限定reads中最低kmercount
+    limit_min_length, limit_max_length = check_limit_length(limit_min_length,
+                                                            limit_max_length)  # 限定组装contig最短百分比长度，较于ref
+    change_seed = check_change_seed(change_seed)  # 种子更换策略最大次数
+    scaffold_or_not = check_scaffold(scaffold_or_not)  # 是否做scaffold
     soft_boundary = check_soft_boundary(soft_boundary)  # 检测软边界
     check_max_min_length(max_length, min_length)  # 检测基因最大最小长度
-    check_ref_format(target_reference_fa, target_reference_gb,
-                     cp_reference, mito_reference)  # 检测参考序列格式
-    sf = check_reference_filtering_strategy(sf)  # 检测参考序列过滤策略
     data_size = check_datasize(data_size)  # 检测数据量 大小
-    # 第一次出现：检测原始数据类型，方便判断是否运行 （有可能是相对路径）
-    raw_data_dict = check_raw_data_type(data1, data2, paired, single)
+    bootstrap_information = check_bootstrap_parameter(bootstrap_number)  # 自展次数
 
-    bootstrap_information = check_bootstrap_parameter(
-        bootstrap_number)  # 检测自展检测参数["Yes",100]
-    bootstrap_number = bootstrap_information[1]
+    # 脚本信息
+    cur_path = os.path.realpath(sys.argv[0])  # 脚本当前路径
+    cur_path = os.path.dirname(cur_path)  # 脚本的父目录,father_path 覆盖
+    filter_path = os.path.join(cur_path, "lib", "my_filter.py")
+    assemble_path = os.path.join(cur_path, "lib", "my_assemble.py")
+    # 文件夹目录
+    reference_database = "reference_database"
+    filtered_out = "filtered_out"
+    assembled_out = "assembled_out"
+    bootstrap_out = "bootstrap_out"
+    GM_results = "GM_results"
 
-    iterative_information = check_iterative_parameter(
-        iterative_number)  # 检测梯度逼近参数 ["Yes",10]
-    iterative_number = iterative_information[1]
+    # 文件目录
+    results_log = "results.log"  # bootstarp  将所有Bootstrap结果写在一起的fasta
+    bootstrap_data_set = "bootstrap_data_set.fasta"
+    bootstrap_concensus = "bootstrap_concensus.fasta"  # 导出共识序列
 
-    task_pool = check_whole_task(
-        target_reference_fa, target_reference_gb, cp_reference, mito_reference)
+    # 其他信息
+    my_software_name = "GM"
+    system = get_platform()
 
-    parameter_information_dict = {"project name": out_dir,
-                                  "data1": data1, "data2": data2, "paired": paired, "single": single,
-                                  "reference (fa)": target_reference_fa, "reference (gb)": target_reference_gb,
-                                  "reference (cp)": cp_reference, "reference (mito)": mito_reference,
-                                  "max length": max_length, "min length": min_length,
-                                  "soft boundary": soft_boundary, "data size": data_size,
-                                  "k-mer": kmer, "threads": thread_number,
-                                  "word-size": wordsize,
-                                  "bootstrap": bootstrap_information[0],
-                                  "bootstrap number": bootstrap_information[1],
-                                  "iterative": iterative_information[0],
-                                  "iterative number": iterative_information[1]}
+    printinfo = {"project name": out_dir,
+                 "data1": data1, "data2": data2, "single": single,
+                 "reference (fa)": target_reference_fa, "reference (gb)": target_reference_gb,
+                 "k1": k1, "k2": k2, "threads": thread_number,
+                 "step length": step_length,
+                 "limit count": limit_count,
+                 "limit min ratio": limit_min_length,
+                 "limit max ratio": limit_max_length,
+                 "change seed": change_seed,
+                 "max length": max_length, "min length": min_length,
+                 "soft boundary": soft_boundary, "data size": data_size,
+                 "bootstrap": bootstrap_information[0],
+                 "bootstrap number": bootstrap_information[1],
+                 }
+    configuration_information = {"out_dir": out_dir,
+                                 "data1": data1, "data2": data2, "single": single,
+                                 "rtfa": target_reference_fa, "rtgb": target_reference_gb,
+                                 "k1": k1, "k2": k2, "thread_number": thread_number,
+                                 "step_length": step_length,
+                                 "limit_count": limit_count,
+                                 "limit_min_length": limit_min_length, #limit_min_ratio
+                                 "limit_max_length": limit_max_length, #limit_max_ratio
+                                 "scaffold_or_not": scaffold_or_not,
+                                 "change_seed": change_seed,
+                                 "max_length": max_length, "min_length": min_length,
+                                 "soft_boundary": soft_boundary, "data_size": data_size,
+                                 "bootstrap": bootstrap_information[0], "bootstrap_number": bootstrap_information[1],
+                                 "reference_database": reference_database,
+                                 "filtered_out": filtered_out, "assembled_out": assembled_out,
+                                 "bootstrap_out": bootstrap_out,
+                                 "GM_results": GM_results,
+                                 "results_log": results_log,
+                                 "bootstrap_data_set": bootstrap_data_set,
+                                 "bootstrap_concensus": bootstrap_concensus,
+                                 "my_software_name": my_software_name,
+                                 "system": system,
+                                 "filter_path": filter_path, "assemble_path": assemble_path,
+                                 "quiet":quiet
 
-    print_parameter_information(parameter_information_dict)
-    extract_raw_data(out_dir, raw_data_dict, data1, data2, paired, single,
-                     data_size, configuration_information)  # 检查原始数据格式是否正确，提取原始数据,产生out_dir文件夹
+                                 }
 
-    if "target_gene_from_fa" in task_pool:
-        my_fasta = Extract_reference_fasta(
-            configuration_information, "tfa", out_dir, target_reference_fa, soft_boundary, sf, max_length, min_length)
-        my_fasta.extract_reference_from_fasta()
-        my_fasta.filter_refrence()
+    print_parameter_information(printinfo)
 
-        my_core_pipeline = Pipeline(configuration_information, "tfa", out_dir,
-                                    thread_number, kmer, wordsize, max_length, min_length, "yes")
-        my_core_pipeline.filter_reads_parallel()
-        my_core_pipeline.assemble_reads_parallel()
-        my_core_pipeline.check_contigs_parallel()
-        my_core_pipeline.record_log_parallel()
+    # 构建参考序列基因库
+    my_bulid_reference_database_pipeline(configuration_information)
+    # 核心流程 过滤 拼接 校验
+    my_core_pipeline = CorePipeLine(configuration_information)
+    my_core_pipeline.filter_pipeline()
+    my_core_pipeline.assemble_pipeline()
+    my_core_pipeline.get_results_contig()
 
-        if iterative_number != "None":
-            my_iterative_pipeline = Run_iterative_pipeline(
-                configuration_information, "tfa", out_dir, thread_number, kmer, wordsize, iterative_number, max_length, min_length, "no")
-            iterative_information = my_iterative_pipeline.prepare_iterative_data()
-            my_iterative_pipeline.run_iterative_parallel(iterative_information)
+    # 自展检测
+    if bootstrap_number:
+        my_bootstrap_pipeline_main(configuration_information)
 
-        if bootstrap_number != "None":
-            my_bootstrap_pipeline = Bootstrap_pipeline(
-                configuration_information, "tfa", out_dir, thread_number, kmer, bootstrap_number, max_length, min_length, "no")
-            my_bootstrap_pipeline.run_bootstrap_pipeline()
-        pack_the_results("tfa", configuration_information,
-                         out_dir, bootstrap_number, iterative_number)
+    my_pack_results_pipeline_main(configuration_information)
 
-    # Genbank格式目标基因流程
-    if "target_gene_from_gb" in task_pool:
-        my_fasta = Extract_reference_fasta(
-            configuration_information, "tgb", out_dir, target_reference_gb, soft_boundary, sf, max_length, min_length)
-        my_fasta.extract_reference_from_gb()
-        my_fasta.filter_refrence()
+    t2=time.time()
 
-        my_core_pipeline = Pipeline(configuration_information, "tgb", out_dir,
-                                    thread_number, kmer, wordsize, max_length, min_length, "yes")
-        my_core_pipeline.filter_reads_parallel()
-        my_core_pipeline.assemble_reads_parallel()
-        my_core_pipeline.check_contigs_parallel()
-        my_core_pipeline.record_log_parallel()
+    whole_time=format(t2-t1,"6.2f")
 
-        if iterative_number != "None":
-            my_iterative_pipeline = Run_iterative_pipeline(
-                configuration_information, "tgb", out_dir, thread_number, kmer, wordsize, iterative_number, max_length, min_length, "no")
-            iterative_information = my_iterative_pipeline.prepare_iterative_data()
-            my_iterative_pipeline.run_iterative_parallel(iterative_information)
+    print("whole time: {}s".format(whole_time))
 
-        if bootstrap_number != "None":
-            my_bootstrap_pipeline = Bootstrap_pipeline(
-                configuration_information, "tgb", out_dir, thread_number, kmer, bootstrap_number, max_length, min_length, "no")
-            my_bootstrap_pipeline.run_bootstrap_pipeline()
-        pack_the_results("tgb", configuration_information,
-                         out_dir, bootstrap_number, iterative_number)
-
-    # 叶绿体基因流程
-    if "cp_gene" in task_pool:
-        my_fasta = Extract_reference_fasta(
-            configuration_information, "cp", out_dir, cp_reference, soft_boundary, sf, max_length, min_length)
-        my_fasta.extract_reference_from_gb()
-
-        my_core_pipeline = Pipeline(configuration_information, "cp", out_dir,
-                                    thread_number, kmer, wordsize, max_length, min_length, "yes")
-        my_core_pipeline.filter_reads_parallel()
-        my_core_pipeline.assemble_reads_parallel()
-        my_core_pipeline.check_contigs_parallel()
-        my_core_pipeline.record_log_parallel()
-
-        if iterative_number != "None":
-            my_iterative_pipeline = Run_iterative_pipeline(configuration_information, "cp", out_dir, thread_number, kmer, wordsize,
-                                                           iterative_number, max_length, min_length, "no")
-            iterative_information = my_iterative_pipeline.prepare_iterative_data()
-            my_iterative_pipeline.run_iterative_parallel(iterative_information)
-
-        if bootstrap_number != "None":
-            my_bootstrap_pipeline = Bootstrap_pipeline(
-                configuration_information, "cp", out_dir, thread_number, kmer, bootstrap_number, max_length, min_length, "no")
-            my_bootstrap_pipeline.run_bootstrap_pipeline()
-        pack_the_results("cp", configuration_information,
-                         out_dir, bootstrap_number, iterative_number)
-
-    # 线粒体基因流程
-    if "mito_gene" in task_pool:
-        mito_fasta = Extract_reference_fasta(
-            configuration_information, "mito", out_dir, mito_reference, soft_boundary, sf, max_length, min_length)
-        mito_fasta.extract_reference_from_gb()
-        mito_fasta.filter_refrence()
-
-        mito_pipeline = Pipeline(configuration_information, "mito", out_dir,
-                                 thread_number, kmer, wordsize, max_length, min_length, "yes")
-        mito_pipeline.filter_reads_parallel()
-        mito_pipeline.assemble_reads_parallel()
-        mito_pipeline.check_contigs_parallel()
-        mito_pipeline.record_log_parallel()
-
-        if iterative_number != "None":
-            my_iterative_pipeline = Run_iterative_pipeline(configuration_information, "mito", out_dir, thread_number, kmer, wordsize,
-                                                           iterative_number, max_length, min_length, "no")
-            iterative_information = my_iterative_pipeline.prepare_iterative_data()
-            my_iterative_pipeline.run_iterative_parallel(iterative_information)
-
-        if bootstrap_number != "None":
-            my_bootstrap_pipeline = Bootstrap_pipeline(
-                configuration_information, "mito", out_dir, thread_number, kmer, bootstrap_number, max_length, min_length, "no")
-            my_bootstrap_pipeline.run_bootstrap_pipeline()
-        pack_the_results("mito", configuration_information,
-                         out_dir, bootstrap_number, iterative_number)
-
-    gv.set_value("my_gui_flag", 0)  # 运行结束，释放
 
 
 def geneminer_GUI():
@@ -341,149 +212,136 @@ def geneminer_GUI():
         [sg.Text('Data1:', size=(11, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-1-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip='One end of the paired-end reads, support fastq/fastq.gz/fastq.bz2',
-                  readonly=False, background_color='#BAD9BC'),
-         sg.FileBrowse("File", font=("Arial", 12), target='-1-', file_types=(("-1", "*.fq"), ("-1", "*.fastq"), ("-1", "*.fq.gz"), ("-1", "*.fastq.gz"), ("-1", "*.fq.bz2"), ("-1", "*.fastq.bz2"), ("-1", "*.Fq")))],
+                  readonly=False),
+         sg.FileBrowse("File", font=("Arial", 12), target='-1-', file_types=(
+             ("-1", "*.fq"), ("-1", "*.fastq"), ("-1", "*.fq.gz"), ("-1", "*.fastq.gz"),
+             ("-1", "*.Fq")))],
 
         # -2
         [sg.Text('Data2:', size=(11, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-2-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip="Another end of the  paired-end reads, support fastq/fastq.gz/fastq.bz2",
-                  readonly=False, background_color='#BAD9BC'),
-         sg.FileBrowse("File", font=("Arial", 12), target='-2-', file_types=(("-2", "*.fq"), ("-2", "*.fastq"), ("-2", "*.fq.gz"), ("-2", "*.fastq.gz"), ("-2", "*.fq.bz2"), ("-2", "*.fastq.bz2")))],
+                  readonly=False, ),
+         sg.FileBrowse("File", font=("Arial", 12), target='-2-', file_types=(
+             ("-2", "*.fq"), ("-2", "*.fastq"), ("-2", "*.fq.gz"), ("-2", "*.fastq.gz"),))],
 
-        #-Paired -12
-        [sg.Text('Paired reads:', size=(11, 1), justification='right', font=("Arial", 12)),
-         sg.Input(key='-12-', size=(20, 1), font=("Arial", 12), expand_x=True,
-                  tooltip='Paired-end reads,support fastq/fastq.gz/fastq.bz2',
-                  readonly=False, background_color='#BAD9BC'),
-         sg.FileBrowse("File", font=("Arial", 12), target='-12-', file_types=(("-12", "*.fq"), ("-12", "*.fastq"), ("-12", "*.fq.gz"), ("-12", "*.fastq.gz"), ("-12", "*.fq.bz2"), ("-12", "*.fastq.bz2")))],
-
-        #-Single -s
+        # -Single -s
         [sg.Text('Single reads:', size=(11, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-s-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip="Single-reads, support fastq/fastq.gz/fastq.bz2",
-                  readonly=False, background_color='#BAD9BC'),
-         sg.FileBrowse("File", font=("Arial", 12), target='-s-', file_types=(("-s", "*.fq"), ("-s", "*.fastq"), ("-s", "*.fq.gz"), ("-s", "*.fastq.gz"), ("-s", "*.fq.bz2"), ("-s", "*.fastq.bz2")))]
+                  readonly=False, ),
+         sg.FileBrowse("File", font=("Arial", 12), target='-s-', file_types=(
+             ("-s", "*.fq"), ("-s", "*.fastq"), ("-s", "*.fq.gz"), ("-s", "*.fastq.gz"),))]
     ]
     reference_frame = [
         # -rtfa
         [sg.Text('Ref. (fasta):', size=(11, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-rtfa-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip="Reference sequences, only support fasta format",
-                  readonly=False, background_color='#BAD9BC'),
-         sg.FileBrowse("File", font=("Arial", 12), target='-rtfa-', file_types=(("rtfa", "*.fasta"), ("rtfa", "*.fa"), ("rtfa", "*.fas"), ("rtfa", "*.FASTA"), ("rtfa", "*.FAS"), ("rtfa", "*.FA"))), sg.FolderBrowse("Folder", font=("Arial", 12), target='-rtfa-')],
+                  readonly=False, ),
+         sg.FileBrowse("File", font=("Arial", 12), target='-rtfa-', file_types=(
+             ("rtfa", "*.fasta"), ("rtfa", "*.fa"), ("rtfa", "*.fas"), ("rtfa", "*.FASTA"), ("rtfa", "*.FAS"),
+             ("rtfa", "*.FA"))), sg.FolderBrowse("Folder", font=("Arial", 12), target='-rtfa-')],
 
         # -rtgb
         [sg.Text('Ref. (gb):', size=(11, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-rtgb-', size=(20, 1), font=("Arial", 12), expand_x=True,
                   tooltip="Reference sequences,only support GenBank format",
-                  readonly=False, background_color='#BAD9BC'),
-         sg.FileBrowse("File", font=("Arial", 12), target='-rtgb-', file_types=(("rtgb", "*.gb"),)), sg.FolderBrowse("Folder", font=("Arial", 12), target='-rtgb-')],
-
-        # # -rcp
-        # [sg.Text('Chlo. genome:', size=(11, 1), justification='right', font=("Arial", 12)),
-        #  sg.Input(key='-rcp-', size=(20, 1), font=("Arial", 12), expand_x=True,
-        #           tooltip="Chloroplast reference genome, only support GenBank format",
-        #           readonly=False, background_color='#BAD9BC'),
-        #  sg.FileBrowse("File", font=("Arial", 12), target='-rcp-', file_types=(("rcp", "*.gb"),)), sg.FolderBrowse("Folder", font=("Arial", 12), target='-rcp-')],
-
-        # # rmito
-        # [sg.Text('Mito. genome:', size=(11, 1), justification='right', font=("Arial", 12)),
-        #  sg.Input(key='-rmito-', size=(20, 1), font=("Arial", 12), expand_x=True,
-        #           tooltip="Mitochondrial reference genome, only support GenBank format",
-        #           readonly=False, background_color='#BAD9BC'),
-        #  sg.FileBrowse("File", font=("Arial", 12), target='-rmito-', file_types=(("rmito", "*.gb"),)), sg.FolderBrowse("Folder", font=("Arial", 12), target='-rmito-')]
-
+                  readonly=False, ),
+         sg.FileBrowse("File", font=("Arial", 12), target='-rtgb-', file_types=(("rtgb", "*.gb"),)),
+         sg.FolderBrowse("Folder", font=("Arial", 12), target='-rtgb-')],
     ]
+
     out_frame = [
-        #-OUT -o
+        # -OUT -o
         [sg.Text('Output Folder:', size=(11, 1), justification='right', font=("Arial", 12)),
          sg.Input(key='-o-', size=(20, 1), font=("Arial", 12), expand_x=True,
-                  tooltip="Specify the result folder ", readonly=False, background_color='#BAD9BC'),
-         sg.FolderBrowse("Folder", font=("Arial", 12), target="-o-")]]
-    filter_frame = [[sg.Text('Rows:', size=(11, 1), justification='right', font=("Arial", 12)),
-                     sg.Input("10000000", key='-n-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
-                              tooltip="The number of rows of raw data from NGS data.\nSet to 'all' if you want to use all the data."),
-                     # -wordsize -kmer
-                     sg.Text('Word-size:', size=(8, 1),
-                             justification='right', font=("Arial", 12)),
-                     sg.Input(16, key='-w-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
-                              tooltip="The length of a word-size  [default=16]")]]
-    assemble_frame = [[sg.Text('K-mer:', size=(11, 1), justification='right', font=("Arial", 12)),
-                       sg.Input(31, key='-k-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
-                                tooltip="The size of a k-mer [default=31]"),
-                       # Boundaty threads
-                       sg.Text('Boundary:', size=(8, 1),
-                               justification='right', font=("Arial", 12)),
-                       sg.Input(75, key='-b-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
-                                tooltip="Extend the length to both sides of the gene while extracting genes from Genbank file [default=75]")],
-                      # min max
-                      [sg.Text('Min:', size=(11, 1), justification='right', font=("Arial", 12)),
-                       sg.Input(300, key='-min-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
-                                tooltip="The minimum length of a gene  [default=300]"),
-                       sg.Text('Max:', size=(8, 1),
-                               justification='right', font=("Arial", 12)),
-                       sg.Input(5000, key='-max-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
-                                tooltip="The maximum length of a gene [default=5000]"),
-                       ],
+                  tooltip="Specify the result folder ", readonly=False, ),
+         sg.FolderBrowse("Folder", font=("Arial", 12), target="-o-")]
+    ]
 
+    filter_frame = [
+        [
+            sg.Text('K1:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input(29, key='-k1-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="The length of a word-size  [default=29]"),
+            sg.Text('Reads:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input("all", key='-n-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="The number of reads.\nSet to 'all' if you want to use all the data."),
+            sg.Text('Step:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input(4, key='-step-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="the length of the sliding window on the reads [default = 4]"),
+        ]
+    ]
 
-                      [sg.Text('Threads:', size=(11, 1), justification='right', font=("Arial", 12)),
-                       sg.Input("auto", key='-t-', size=(11, 1), font=("Arial", 12), expand_x=False, background_color = '#BFE9FF',
-                                tooltip="Specify the number of threads you want to run [default=auto]"),
-                       ]]
+    assemble_frame = [
+        [
+            sg.Text('K2:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input(31, key='-k2-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="The size of a k-mer [default=31]"),
+            sg.Text('Limit:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input('auto', key='-limit-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="limit of kmer count [default=auto]]"),
+            sg.Text('Seed:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input(32, key='-seed-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="times of changing seed [default = 32]"),
+        ],
+    ]
+
     verify_frame = [
-        [sg.Text('Iterative:', size=(12, 1), justification='right', font=("Arial", 12)),
-         sg.Input(2, key='-in-', size=(5, 1), font=("Arial", 12), expand_x=False, readonly=False, background_color = '#BFE9FF',
-                  tooltip="Specify the number of iterative loop to filter reads correctly around indels"),
-         sg.CB(' ', font=("Arial", 12), size=(3, 1),
-               key='-cbin-', enable_events=True),
+        [
+            sg.Text('Bootstrap:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input(10, key='-bn-', size=(6, 1), font=("Arial", 12), expand_x=False, readonly=False,
+                     tooltip="Specify the bootstrap number. Evaluate the results based on the bootstrap method"),
+            sg.CB(' ', font=("Arial", 12), size=(3, 1), key='-cbbn-', enable_events=True)
+        ],
 
+    ]
 
-         sg.Text('Bootstrap:', size=(8, 1),
-                 justification='right', font=("Arial", 12)),
-         sg.Input(10, key='-bn-', size=(6, 1), font=("Arial", 12), expand_x=False, readonly=False, background_color = '#BFE9FF',
-                  tooltip="Specify the bootstrap number. Evaluate the results based on the bootstrap method"),
-         sg.CB(' ', font=("Arial", 12), size=(3, 1),
-               key='-cbbn-', enable_events=True)
-         ],
-         # Reference filtering
-        [sg.Text("Computation:", size=(12, 1), justification='right', font=("Arial", 12)),
-         sg.Input("s1", key='-sf-', size=(20, 1), font=("Arial", 12), expand_x=True, background_color = '#BFE9FF',
-                  tooltip="Selecting the method to reduce the computation\n"
-                          "s1: do nothing;\n"
-                          "s2/s3/s4:only use the reference sequence with the shortest/median/longest length;\n"
-                          "s5: remove the reference sequences with abnormal length;\n"
-                          "file: specify the name of reference sequences to use.\n"
-                          "[default='s1']"), sg.FileBrowse("File", target="-sf-", font=("Arial", 12), file_types=(("txt", "*.txt"),))],
+    others_frame = [
+        [
+            sg.Text('Boundary:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input(75, key='-b-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="Extend the length to both sides of the gene while extracting genes from Genbank file [default=75]"),
+            sg.Text('Min:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input(300, key='-min-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="The minimum length of a gene  [default=300]"),
+            sg.Text('Max:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input(5000, key='-max-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="The maximum length of a gene [default=5000]"),
+        ],
 
-         ]
+        [
+            sg.Text('limit_min:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input(1, key='-limit_min-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="limit of contig length [default=1]"),
+            sg.Text('limit_max:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input(2, key='-limit_max-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="limit of contig length [default=1]"),
+            sg.Text('Threads:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.Input("auto", key='-t-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="Specify the number of threads you want to run [default=auto]"),
+        ],
+        [
+            sg.Text('Scaffold:', size=(8, 1), justification='right', font=("Arial", 12)),
+            sg.CB(' ', font=("Arial", 12), size=(3, 1), key='-cbscaffold-', enable_events=True)
+        ],
+
+    ]
+
     left_col = [
         # 基本设定
-        [sg.Text('Basic Option', size=(12, 1),
-                 justification='left', font=("Arial", 12, 'bold'))],
-        [sg.Frame('Data', layout=input_frame,
-                  expand_x=True, font=("Arial", 12))],
-        [sg.Frame('Reference', layout=reference_frame,
-                  expand_x=True, font=("Arial", 12))],
-        [sg.Frame('Output', layout=out_frame,
-                  expand_x=True, font=("Arial", 12))],
+        [sg.Text('Basic Option', size=(12, 1), justification='left', font=("Arial", 12, 'bold'))],
+        [sg.Frame('Data', layout=input_frame, expand_x=True, font=("Arial", 12))],
+        [sg.Frame('Reference', layout=reference_frame, expand_x=True, font=("Arial", 12))],
+        [sg.Frame('Output', layout=out_frame, expand_x=True, font=("Arial", 12))],
 
         # 高级设定
-        [sg.Text('Advanced Option', size=(20, 1),
-                 justification='left', font=("Arial", 12, 'bold'))],
-        [sg.Frame('Filter', layout=filter_frame,
-                  expand_x=True, font=("Arial", 12))],
-        [sg.Frame('Assembler', layout=assemble_frame,
-                  expand_x=True, font=("Arial", 12))],
-        [sg.Frame('Verifier', layout=verify_frame,
-                  expand_x=True, font=("Arial", 12))],
-
-        
-
-
-
-        
+        [sg.Text('Advanced Option', size=(20, 1), justification='left', font=("Arial", 12, 'bold'))],
+        [sg.Frame('Filter', layout=filter_frame, expand_x=True, font=("Arial", 12))],
+        [sg.Frame('Assembler', layout=assemble_frame, expand_x=True, font=("Arial", 12))],
+        [sg.Frame('Verifier', layout=verify_frame, expand_x=True, font=("Arial", 12))],
+        [sg.Frame('Others', layout=others_frame, expand_x=True, font=("Arial", 12))]
         # 空行备用
         # [sg.T(' ', size=(40,1), justification='left', font=("Arial",12,'bold'))],
     ]
@@ -493,7 +351,7 @@ def geneminer_GUI():
         [sg.MLine(key='-ML1-', size=(85, 10), enter_submits=True, reroute_stdout=True, reroute_stderr=True,
                   enable_events=True, visible=False)],
         [sg.MLine(key='-ML2-', size=(85, 20), autoscroll=True,
-                  font='TkFixedFont', background_color="#DEDBBD")],  # 等宽字体
+                  font='TkFixedFont', )],  # 等宽字体
 
         # 按钮
         [sg.Button('Run', size=(8, 1), font=("Arial", 12)),
@@ -503,19 +361,15 @@ def geneminer_GUI():
          sg.Button('Close', size=(8, 1), font=("Arial", 12))]
     ]
     layout = [
-        [sg.Image(icon_48),
-         sg.Text('GeneMiner', justification="left", font=("Arial", 24, "bold"))
-         ],
+        [sg.Image(icon_48), sg.Text('GeneMiner', justification="left", font=("Arial", 24, "bold"))],
         [sg.T('Authors: Xie Pulin, Guo Yongling, Zhang Zhen, Yu Yan', font=("Arial", 12)),
          sg.T('Email: xiepulin@stu.scu.edu.cn', font=("Arial", 12))],
         [sg.Pane([sg.Column(left_col, element_justification='l', expand_x=True, expand_y=True),
                   sg.Column(right_col, element_justification='c', expand_x=True, expand_y=True)], orientation='h',
                  relief=sg.RELIEF_SUNKEN, key='-PANE-')],
-        [
-            sg.T(my_cite, font=("Arial", 12)),
-            sg.Text(my_version, expand_x=True,
-                    justification="right", font=("Arial", 12)),
-        ],
+        [sg.T(my_cite, font=("Arial", 12)),
+         sg.Text(my_version, expand_x=True, justification="right", font=("Arial", 12)),
+         ],
     ]
     window = sg.Window('GeneMiner', layout, finalize=True,
                        icon=icon, resizable=True, use_default_focus=False)
@@ -523,7 +377,6 @@ def geneminer_GUI():
     window["-ML2-"].expand(True, True, True)
     window['-PANE-'].expand(True, True, True)
     window['-bn-'].update(disabled=True)
-    window['-in-'].update(disabled=True)
 
     '''
     ML1_length 统计原始长度
@@ -538,16 +391,11 @@ def geneminer_GUI():
         event, values = window.read(timeout=250)
         if event == sg.WIN_CLOSED or event == 'Close':  # if user closes window or clicks cancel
             break
-
         if values['-cbbn-']:
             window['-bn-'].update(disabled=False)
         else:
             window['-bn-'].update(disabled=True)
 
-        if values['-cbin-']:
-            window['-in-'].update(disabled=False)
-        else:
-            window['-in-'].update(disabled=True)
 
         if event == 'Results':
             file_to_show = values['-o-']
@@ -562,7 +410,7 @@ def geneminer_GUI():
                     pass
             else:
                 try:
-                    file_to_show = gv.get_value("out_dir")
+                    file_to_show = get_value("out_dir")
                     if get_platform() == "windows":
                         os.startfile(file_to_show)
                     else:
@@ -577,7 +425,7 @@ def geneminer_GUI():
             ML1_length = -1
 
         # 1代表运行 0代表运行结束。
-        if event == 'Run' and gv.get_value("my_gui_flag") == 0:
+        if event == 'Run' and get_value("my_gui_flag") == 0:
             # 基本参数部分
             if values["-1-"]:
                 args.data1 = values["-1-"]
@@ -587,10 +435,6 @@ def geneminer_GUI():
                 args.data2 = values["-2-"]
             else:
                 args.data2 = None
-            if values["-12-"]:
-                args.paired = values["-12-"]
-            else:
-                args.paired = None
             if values["-s-"]:
                 args.single = values["-s-"]
             else:
@@ -603,32 +447,62 @@ def geneminer_GUI():
                 args.target_reference_gb = values["-rtgb-"]
             else:
                 args.target_reference_gb = None
-            # if values["-rcp-"]:
-            #     args.cp_reference = values["-rcp-"]
-            # else:
-            #     args.cp_reference = None
-            # if values["-rmito-"]:
-            #     args.mito_reference = values["-rmito-"]
-            # else:
-            #     args.mito_reference = None
             if values["-o-"]:
                 if not os.path.exists(values["-o-"]):
                     os.makedirs(values["-o-"])
                 args.out = values["-o-"]
             else:
-                sg.Popup("You must specify an output folder!",
-                         title='Info', keep_on_top=True, font=("Arial", 12))
+                sg.Popup("You must specify an output folder!",title='Info', keep_on_top=True, font=("Arial", 12))
                 continue
 
+
             # 高级参数部分
-            if values["-k-"]:
-                args.kmer = int(values["-k-"])
+            #filter
+            if values["-k1-"]:
+                args.kmer1 = int(values["-k1-"])
             else:
-                args.kmer = 31
-            if values["-w-"]:
-                args.wordsize = int(values["-w-"])
+                args.kmer1 = 29
+
+            if values["-n-"]:
+                if values["-n-"].upper() == "ALL":
+                    args.data_size = "all"
+                elif values["-n-"].isdigit():
+                    args.data_size = int(values["-n-"])
             else:
-                args.wordsize = 16
+                args.data_size = 'all'
+
+            if values["-step-"]:
+                args.steo_length = int(values["-step-"])
+            else:
+                args.steo_length = 29
+
+            #assemble
+            if values["-k2-"]:
+                args.kmer2 = int(values["-k2-"])
+            else:
+                args.kmer2  = 31
+
+            if values["-limit-"]:
+                if values["-limit-"].upper() == "AUTO":
+                    args.limit_count = 'auto'
+                elif values["-limit-"].isdigit():
+                    args.limit_count = int(values["-limit-"])
+            else:
+                args.limit_count = 'auto'
+
+            if values["-seed-"]:
+                args.change_seed = int(values["-seed-"])
+            else:
+                args.change_seed = 32
+
+            #verify
+            if values["-cbbn-"]:
+                if values["-bn-"]:
+                    args.bootstrap_number = int(values["-bn-"])
+            else:
+                args.bootstrap_number = None
+
+            #others
             if values["-min-"]:
                 args.min = int(values["-min-"])
             else:
@@ -637,15 +511,23 @@ def geneminer_GUI():
                 args.max = int(values["-max-"])
             else:
                 args.max = 5000
+
+            if values["-limit_min-"]:
+                args.limit_min_length = float(values["-limit_min-"])
+            else:
+                args.limit_min_length = 1
+            if values["-limit_max-"]:
+                args.limit_max_length = int(values["-limit_max-"])
+            else:
+                args.limit_max_length = 2
+
+
             if values["-b-"]:
                 args.soft_boundary = int(values["-b-"])
-            if values["-n-"]:
-                if values["-n-"].upper() == "ALL":
-                    args.number = "all"
-                elif values["-n-"].isdigit():
-                    args.number = int(values["-n-"])
             else:
-                args.number = 10000000
+                args.soft_boundary = 75
+
+
             if values["-t-"]:
                 if values["-t-"].upper() == "AUTO":
                     args.thread = "auto"
@@ -654,52 +536,48 @@ def geneminer_GUI():
             else:
                 args.thread = "auto"
 
-            if values["-sf-"]:
-                args.reference_filtering = values["-sf-"]
+            if values['-cbscaffold-']:
+                args.scaffold=True
             else:
-                args.reference_filtering = 's1'
-
-            # 自展检测部分
-            if values["-cbbn-"]:
-                if values["-bn-"]:
-                    args.bootstrap_number = int(values["-bn-"])
-            else:
-                args.bootstrap_number = None
-
-            # 梯度逼近部分
-            if values["-cbin-"]:
-                if values["-in-"]:
-                    args.iterative_number = int(values["-in-"])
-            else:
-                args.iterative_number = None
+                args.scaffold=False
 
             threading.Thread(target=main, args=(args,), daemon=True).start()
 
+
         if event == "Reset":
-            gv.set_value("my_gui_flag", 0)
+            set_value("my_gui_flag", 0)
             values['-ML1-'] = ""
             ML1_length = -1  # 初始值赋值为-1，直接打印
             # 基础参数部分
             window['-1-'].update("")
             window['-2-'].update("")
-            window['-12-'].update("")
             window['-s-'].update("")
             window['-rtfa-'].update("")
             window['-rtgb-'].update("")
-            # window['-rcp-'].update("")
-            # window['-rmito-'].update("")
             window['-o-'].update("")
             # 高级参数部分
-            window['-k-'].update("31")
-            window['-w-'].update("16")
+            #filter
+            window['-k1-'].update("29")
+            window['-n-'].update('all')
+            window['-step-'].update('4')
+            #assemble
+            window['-k2-'].update("31")
+            window['-limit-'].update("auto")
+            window['-seed-'].update("32")
+            #verify
+            window['-bn-'].update("10")
+            window['-cbbn-'].update(False)
+
+
+            #others
+            window['-b-'].update("75")
             window['-min-'].update("300")
             window['-max-'].update("5000")
-            window['-b-'].update("75")
-            window['-n-'].update("10000000")
+            window['-limit_min-'].update("1")
+            window['-limit_max-'].update("2")
             window['-t-'].update("auto")
-            window['-sf-'].update("s1")
-            window['-bn-'].update("10")
-            window['-in-'].update("2")
+            window['-cbscaffold-'].update(False)
+
             # 输出部分
             # 清空输出界面 ML2复制的ML1，所以清空ML1就等效于清空ML2(实时刷新的时候)
             # 清空输出界面 由于现在加了判断，ML2虽然复制ML1，但最后的时候不再进行实时复制，所以需要单独删除ML2
@@ -709,25 +587,32 @@ def geneminer_GUI():
             '''
             清空参数空间
             '''
+            #基础参数
             args.data1 = None
             args.data2 = None
-            args.paired = None
             args.single = None
             args.target_reference_fa = None
             args.target_reference_gb = None
-            args.cp_reference = None
-            args.mito_reference = None
             args.out = None
-            args.kmer = 31
-            args.wordsize = 16
+            #高级参数
+            #filter
+            args.kmer1 = 29
+            args.data_size='all'
+            args.step_length=4
+            #assemble
+            args.kmer2=31
+            args.limit_count=2
+            args.change_seed=32
+            #verify
+            args.bootstrap_number=10
+            #others
+            args.soft_boundary = 75
             args.min = 300
             args.max = 5000
-            args.soft_boundary = 75
-            args.number = 10000000
+            args.limit_max_length=1
+            args.limit_max_length=2
             args.thread = "auto"
-            args.reference_filtering = "s1"
-            args.bootstrap_number = 10
-            args.iterative_number = 2
+            args.scaffold = False
 
         '''
         打印实时输出，需要判断后一次的输出是否比前一次的输出长，如果是才实时刷新
@@ -739,14 +624,20 @@ def geneminer_GUI():
     window.close()
 
 
+
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)  # 检测函数终止退出（ctrl+c） #必须放在主程序中
     multiprocessing.freeze_support()  # windows上Pyinstaller打包多进程程序需要添加特殊指令
-    gv.set_value("my_gui_flag", 0)  # 用于判定脚本是否跑完，还可以防止run双击覆盖事件
-    parser = argparse.ArgumentParser(usage="%(prog)s <-1 -2|-s|-12>  <-rn|rcp|-rmito|rt>  [options]",
+    set_value("my_gui_flag", 0)  # 用于判定脚本是否跑完，还可以防止run双击覆盖事件
+
+
+
+
+
+    parser = argparse.ArgumentParser(usage="%(prog)s <-1 -2|-s>  <-rtfa|rtgb>  <-o>  [options]",
                                      description="GeneMiner: a software for extracting phylogenetic markers from next generation sequencing data\n"
-                                                 "Version: 1.0\n"
-                                                 "Copyright (C) 2021 Pulin Xie\n"
+                                                 "Version: 1.0.0\n"
+                                                 "Copyright (C) 2022 Pulin Xie\n"
                                                  "Please contact <xiepulin@stu.edu.scu.cn> if you have any questions",
 
                                      formatter_class=argparse.RawTextHelpFormatter,
@@ -759,23 +650,15 @@ if __name__ == "__main__":
     # 原始数据输入部分
     basic_option_group = parser.add_argument_group(title="Basic option")
     basic_option_group.add_argument("-1", dest="data1",
-                                    help="One end of the paired-end reads, support fastq/fastq.gz/fastq.bz2", metavar="")
+                                    help="One end of the paired-end reads, support fastq format", metavar="")
     basic_option_group.add_argument("-2", dest="data2",
-                                    help="Another end of the paired-end reads, support fastq/fastq.gz/fastq.bz2", metavar="")
-    basic_option_group.add_argument("-12", dest="paired",
-                                    help="Paired-end reads, support fastq/fastq.gz/fastq.bz2",
-                                    metavar="")
-    basic_option_group.add_argument("-s", "--single", dest="single",
-                                    help="Single-read, support fastq/fastq.gz/fastq.bz2", metavar="")
-    basic_option_group.add_argument("-o", "--out", dest="out", help="Specify the result folder [default='auto']",
-                                    default="auto", metavar="")
+                                    help="Another end of the paired-end reads, support fastq format", metavar="")
 
-    basic_option_group.add_argument("-rcp", dest="cp_reference",
-                                    help="Chloroplast reference genome, only support GenBank-format",
-                                    metavar="<file|dir>")
-    basic_option_group.add_argument("-rmito", dest="mito_reference",
-                                    help="Mitochondrial reference genome, only support GenBank-format",
-                                    metavar="<file|dir>")
+    basic_option_group.add_argument("-s", "--single", dest="single",
+                                    help="Single reads, support fastq format", metavar="")
+    basic_option_group.add_argument("-o", "--out", dest="out", help="Specify the result folder ",
+                                     metavar="")       #图形界面版本需要去掉required==True
+
     basic_option_group.add_argument("-rtfa", dest="target_reference_fa",
                                     help="References of target genes, only support fasta format", metavar="<file|dir>")
     basic_option_group.add_argument("-rtgb", dest="target_reference_gb",
@@ -783,47 +666,54 @@ if __name__ == "__main__":
 
     # 高级参数部分
     advanced_option_group = parser.add_argument_group(title="Advanced option")
-    advanced_option_group.add_argument("-n", "--number",
-                                       help="The number of rows of raw data.\n"
-                                            "If you want to use all the data, you can set as ['all']",
-                                       default=10000000, metavar="")
-    advanced_option_group.add_argument("-k", "--kmer", dest="kmer", help="Size of kmer  [default = 31]", default=31,
+
+    advanced_option_group.add_argument("-k1", "--kmer1", dest="kmer1", help="Specify the size of the wordsize to filter reads  [default = 29]", default=29,
                                        type=int, metavar="")
-    advanced_option_group.add_argument("-w", "--wordsize", dest="wordsize", help="length of a word-size [default=16]", default=16,
+    advanced_option_group.add_argument("-k2", "--kmer2", dest="kmer2", help="Specify the size of the kmer to assemble reads  [default = 31]", default=31,
                                        type=int, metavar="")
-    advanced_option_group.add_argument("-max", dest="max", help="The maximum length of genes [default=5000]", default=5000,
+
+    advanced_option_group.add_argument("-d", "--data",dest="data_size",
+                                       help="Specifies the number of reads to reduce raw data. If you want to use all the data, you can set as 'all' [default = 'all']",
+                                       default='all', metavar="")
+
+    advanced_option_group.add_argument("-step_length", metavar="", dest="step_length", type=int,
+                      help="the length of the sliding window on the reads [default = 4]", default=4)
+    advanced_option_group.add_argument('-limit_count', metavar='',dest='limit_count', help='''limit of kmer count [default=auto]''', required=False,
+                      default='auto')
+    advanced_option_group.add_argument('-limit_min_length', metavar='', dest='limit_min_length',type=float, help='''limit of contig length''',
+                      required=False, default=1)
+    advanced_option_group.add_argument('-limit_max_length', metavar='',dest='limit_max_length', type=float, help='''limit of contig length''',
+                      required=False, default=2)
+
+    advanced_option_group.add_argument("-change_seed", metavar="", dest="change_seed",type=int, help='''times of changing seed [default = 32]''', required=False,
+                      default=32)
+    advanced_option_group.add_argument('-scaffold', metavar="",dest="scaffold",type=str,help='''make scaffold''', default=False)
+
+    advanced_option_group.add_argument("-max", dest="max", help="The maximum length of contigs [default = 5000]", default=5000,
                                        type=int, metavar="")
-    advanced_option_group.add_argument("-min", dest="min", help="The minimum length of genes [default = 300]", default=300,
+    advanced_option_group.add_argument("-min", dest="min", help="The minimum length of contigs [default = 300]", default=300,
                                        type=int, metavar="")
     advanced_option_group.add_argument("-t", "--thread",
                                        help="The number of threads [default = 'auto']",
                                        default="auto", metavar="")
     advanced_option_group.add_argument("-b", "--boundary", dest="soft_boundary",
-                                       help="Extend the length to both sides of the gene while extracting  genes from  Genbank file [default=75]",
+                                       help="Extend the length to both sides of the gene while extracting genes from Genbank file [default = 75]",
                                        default=75, type=int, metavar="")
 
-    advanced_option_group.add_argument("-sf", dest="reference_filtering", help="Select the reference sequences to reduce the computation.\n"
-                                       "s1: do nothing;\n"
-                                       "s2,3,4: only use the reference sequence with the shortest/median/longest length;\n"
-                                       "s5: remove sequences with abnormal length."
-                                       "[default = 's1']",
-
-                                       default="s1", metavar="")
-
-    # 梯度逼近部分
-    gradient_approximation_group = parser.add_argument_group(
-        title="Gradient approximation option")
-
-    gradient_approximation_group.add_argument("-in", "--iterative_number", dest="iterative_number",
-                                              help="Specify the number of iterative loop to gradually approximate the best results", type=int,
-                                              metavar="")
-
-    # 自展参数部分
-    bootstrap_option_group = parser.add_argument_group(
-        title="Bootstrap option")
-    bootstrap_option_group.add_argument("-bn", "--bootstrap_number", dest="bootstrap_number", type=int,
-                                        help="Specify the bootstrap number.Evaluate the results based on the bootstrap method",
+    advanced_option_group.add_argument("-bn", "--bootstrap", dest="bootstrap_number", type=int,
+                                        help="Specify the bootstrap number. Evaluate the results based on the bootstrap method",
                                         metavar="")
+
+
     args = parser.parse_args()
+
+
+
+
+
+
     # main(args)
     geneminer_GUI()
+
+
+
