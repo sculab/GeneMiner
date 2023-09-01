@@ -6,5 +6,4 @@ lib/muscle3
 lib/__pycache__
 build/*
 dist/*
-setup.py
 example/*

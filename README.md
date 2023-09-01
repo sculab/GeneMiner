@@ -21,9 +21,9 @@ Users on Windows, macOS, and Linux can run GeneMiner directly from the command l
 
 ## GeneMiner with Graphical User Interface (GUI)
 
-For individuals who are not accustomed to utilizing the command line or for light use, we strongly advise using the GUI version. Download the corresponding version of the packaged GUI from [here](https://github.com/happywithxpl/GeneMiner/releases) and double-click to run it.
+For individuals who are not accustomed to utilizing the command line or for light use, we strongly advise using the GUI version. Download the corresponding version of the packaged GUI from [here](https://github.com/sculab/GeneMiner/releases) and double-click to run it.
 
-![图片](https://github.com/happywithxpl/GeneMiner-Test/blob/main/GeneMiner_GUI.png)
+![图片](https://github.com/sculab/GeneMiner-Test/blob/main/GeneMiner_GUI.png)
 
 ## **GeneMiner with command (cmd)**
 
@@ -38,7 +38,7 @@ For individuals who are not accustomed to utilizing the command line or for ligh
 Clone GeneMiner's repository directly and build it as below:
 
 ```shell
-git clone https://github.com/happywithxpl/GeneMiner.git
+git clone https://github.com/sculab/GeneMiner.git
 cd GeneMiner
 python setup.py install --record logName --user #Add 'geneminer.py' to the '$PATH' 
 geneminer.py -h
@@ -54,10 +54,10 @@ cat logName | xargs rm -rf
 
 **Source code installation**
 
- Download the source distribution from the [release](https://github.com/happywithxpl/GeneMiner/releases) and  install dependencies:
+ Download the source distribution from the [release](https://github.com/sculab/GeneMiner/releases) and  install dependencies:
 
 ```shell
-wget -c https://github.com/happywithxpl/GeneMiner/releases/download/v1.0.0/GeneMiner_v1.0.0_linux.tar.gz
+wget -c https://github.com/sculab/GeneMiner/releases/download/v1.0.0/GeneMiner_v1.0.0_linux.tar.gz
 tar GeneMiner_v1.0.1_linux.tar.gz
 cd  GeneMiner_v1.0.1_linux
 python setup.py install --record logName --user
@@ -76,10 +76,10 @@ cat logName | xargs rm -rf
 
 If both of the above methods fail or you want to have a deeper control of GeneMiner, you can use a more flexible method.
 
-- Download the GeneMiner's distribution from  [here](https://github.com/happywithxpl/GeneMiner/releases).
+- Download the GeneMiner's distribution from  [here](https://github.com/sculab/GeneMiner/releases).
 
 ```shell
-wget -c https://github.com/happywithxpl/GeneMiner/releases/download/v1.0.0/GeneMiner_v1.0.0_linux.tar.gz
+wget -c https://github.com/sculab/GeneMiner/releases/download/v1.0.0/GeneMiner_v1.0.0_linux.tar.gz
 tar GeneMiner_v1.0.1_linux.tar.gz
 ```
 
@@ -109,7 +109,7 @@ geneminer.py -h
 
 # Running GeneMiner
 
-GeneMiner takes the reference sequences and FASTQ format sequencing files as input and the recovered phylogenetic markers as output. We have prepared a simulated dataset of `Arabidopsis thaliana` to help you quickly grasp the main usage of GeneMiner. You can download them from [GeneMiner-Demo](https://github.com/happywithxpl/GeneMiner-Demo) or [here](https://github.com/happywithxpl/GeneMiner-Test/tree/main/Demo) .
+GeneMiner takes the reference sequences and FASTQ format sequencing files as input and the recovered phylogenetic markers as output. We have prepared a simulated dataset of `Arabidopsis thaliana` to help you quickly grasp the main usage of GeneMiner. You can download them from [GeneMiner-Demo](https://github.com/sculab/GeneMiner-Demo) or [here](https://github.com/sculab/GeneMiner-Test/tree/main/Demo) .
 
 
 
@@ -184,7 +184,7 @@ GeneMiner-GUI is straightforward, simple to use, and ideal for lightweight users
 
 For GeneMiner-GUI, you must set `Data1`, `Data2` or `Single reads` under the `Data` module, `Ref.(fasta)` or `Ref.(gb)` under the `Reference` module and  `Output Folder` under the `Outout` module as below:
 
-![图片](https://github.com/happywithxpl/GeneMiner-Test/blob/main/Run_GeneMiner_GUI.png)
+![图片](https://github.com/sculab/GeneMiner-Test/blob/main/Run_GeneMiner_GUI.png)
 
 **Run**
 
@@ -240,14 +240,14 @@ The output directory contains  `reference_database`、`filtered_out `、`assembl
 
 # User manual
 
-A more complete manual is here: https://github.com/happywithxpl/GeneMiner/blob/main/GeneMiner_User_Guide.pdf
+A more complete manual is here: https://github.com/sculab/GeneMiner/blob/main/GeneMiner_User_Guide.pdf
 
 # Contact
 
-Please check [Geneminer's homepage](https://github.com/happywithxpl/GeneMiner) first. If something is wrong when running GeneMiner, please do not be surprised and report it to us. We usually have quick response to bugs.
+Please check [Geneminer's homepage](https://github.com/sculab/GeneMiner) first. If something is wrong when running GeneMiner, please do not be surprised and report it to us. We usually have quick response to bugs.
 
-- Find Questions & Answers at [GeneMiner Discussions](https://github.com/happywithxpl/GeneMiner/discussions/categories/q-a): **Recommended**
-- Report Bugs & Issues at [GeneMiner Issues](https://github.com/happywithxpl/GeneMiner/issues): Please avoid repetitive or irrelevant issues
+- Find Questions & Answers at [GeneMiner Discussions](https://github.com/sculab/GeneMiner/discussions/categories/q-a): **Recommended**
+- Report Bugs & Issues at [GeneMiner Issues](https://github.com/sculab/GeneMiner/issues): Please avoid repetitive or irrelevant issues
 - QQ group (ID: 78266311): Mainly for mutual help, responses are likely to be not timely
 
 **DO NOT** directly write to us with your questions, instead please post the questions **publicly**, using above platforms  Our emails (xiepulin@scu.edu.cn, 1791173948@qq.com) are only for receiving public question alert and private data (if applied) associated with those public questions. When you send your private data to us, enclose the email with a link where you posted the question. Our only reply emails will be a receiving confirmation, while our answers will be posted in a public place.

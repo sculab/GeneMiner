@@ -52,7 +52,7 @@ from lib.bootstrap_pipeline import my_bootstrap_pipeline_main
 from lib.pack_results import my_pack_results_pipeline_main
 
 my_version = 'Version 1.1b build 20230901'
-my_cite = 'Cite: https://github.com/happywithxpl/GeneMiner'
+my_cite = 'Cite: https://github.com/sculab/GeneMiner'
 get_init()  # 在basic 中已经申明过了
 
 
