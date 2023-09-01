@@ -23,7 +23,7 @@ Users on Windows, macOS, and Linux can run GeneMiner directly from the command l
 
 For individuals who are not accustomed to utilizing the command line or for light use, we strongly advise using the GUI version. Download the corresponding version of the packaged GUI from [here](https://github.com/sculab/GeneMiner/releases) and double-click to run it.
 
-![图片](https://github.com/sculab/GeneMiner-Test/blob/main/GeneMiner_GUI.png)
+![图片](https://github.com/sculab/GeneMiner/blob/main/GeneMiner_GUI.png)
 
 ## **GeneMiner with command (cmd)**
 
@@ -109,7 +109,7 @@ geneminer.py -h
 
 # Running GeneMiner
 
-GeneMiner takes the reference sequences and FASTQ format sequencing files as input and the recovered phylogenetic markers as output. We have prepared a simulated dataset of `Arabidopsis thaliana` to help you quickly grasp the main usage of GeneMiner. You can download them from [GeneMiner-Demo](https://github.com/sculab/GeneMiner-Demo) or [here](https://github.com/sculab/GeneMiner-Test/tree/main/Demo) .
+GeneMiner takes the reference sequences and FASTQ format sequencing files as input and the recovered phylogenetic markers as output. We have prepared a simulated dataset of `Arabidopsis thaliana` to help you quickly grasp the main usage of GeneMiner. You can download them from [GeneMiner-Demo](https://github.com/sculab/GeneMiner-Demo) or [here](https://github.com/sculab/GeneMiner/tree/main/Demo) .
 
 
 
@@ -184,7 +184,7 @@ GeneMiner-GUI is straightforward, simple to use, and ideal for lightweight users
 
 For GeneMiner-GUI, you must set `Data1`, `Data2` or `Single reads` under the `Data` module, `Ref.(fasta)` or `Ref.(gb)` under the `Reference` module and  `Output Folder` under the `Outout` module as below:
 
-![图片](https://github.com/sculab/GeneMiner-Test/blob/main/Run_GeneMiner_GUI.png)
+![图片](https://github.com/sculab/GeneMiner/blob/main/Run_GeneMiner_GUI.png)
 
 **Run**
 
