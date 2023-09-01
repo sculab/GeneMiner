@@ -23,14 +23,14 @@ Users on Windows, macOS, and Linux can run GeneMiner directly from the command l
 
 For individuals who are not accustomed to utilizing the command line or for light use, we advise using the GUI version. 
 
-For windows: Download the corresponding version of the packaged GUI from [here](https://github.com/sculab/GeneMiner/releases) and double-click to run it.
+For windows: Download the corresponding version of the packaged GUI from [here](https://github.com/sculab/Geneminer/releases/latest) and double-click to run it.
 
 For macOS: 
 ```shell
 git clone https://github.com/sculab/GeneMiner.git
 cd GeneMiner
-pip install biopython --user
-pyhton geneminer-gui.py
+pip install -r requirements.txt --user
+python geneminer-gui.py
 ```
 ![图片](https://github.com/sculab/GeneMiner/blob/main/GeneMiner_GUI.png)
 
@@ -257,9 +257,8 @@ Please check [Geneminer's homepage](https://github.com/sculab/GeneMiner) first. 
 
 - Find Questions & Answers at [GeneMiner Discussions](https://github.com/sculab/GeneMiner/discussions/categories/q-a): **Recommended**
 - Report Bugs & Issues at [GeneMiner Issues](https://github.com/sculab/GeneMiner/issues): Please avoid repetitive or irrelevant issues
-- QQ group (ID: 78266311): Mainly for mutual help, responses are likely to be not timely
 
-**DO NOT** directly write to us with your questions, instead please post the questions **publicly**, using above platforms  Our emails (xiepulin@scu.edu.cn, 1791173948@qq.com) are only for receiving public question alert and private data (if applied) associated with those public questions. When you send your private data to us, enclose the email with a link where you posted the question. Our only reply emails will be a receiving confirmation, while our answers will be posted in a public place.
+**DO NOT** directly write to us with your questions, instead please post the questions **publicly**, using above platforms  Our emails (yyu@scu.edu.cn, 1791173948@qq.com) are only for receiving public question alert and private data (if applied) associated with those public questions. When you send your private data to us, enclose the email with a link where you posted the question. Our only reply emails will be a receiving confirmation, while our answers will be posted in a public place.
 
 
 
