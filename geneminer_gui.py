@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# @Time    : 2021/10/20 16:58
-# @Author  : xiepulin
+# @Time    : 2023/09/01 16:58
+# @Author  : xiepulin Yan
 # @File    : geneminer_gui.py
 # @Software: PyCharm
-
+import warnings
+warnings.filterwarnings('ignore')
 import argparse
 import sys
 import subprocess
@@ -35,7 +36,6 @@ from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 from Bio import pairwise2
-
 import PySimpleGUI as sg
 
 

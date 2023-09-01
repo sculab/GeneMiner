@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# @Time    : 2022/5/8 10:05
+# @Time    : 2023/5/8 10:05
 # @Author  : xiepulin
 # @File    : geneminer.py
 # @Software: PyCharm
 
-
+import warnings
+warnings.filterwarnings('ignore')
 import argparse
 import sys
 import subprocess
