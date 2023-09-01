@@ -626,7 +626,7 @@ def do_re_filter_reads(parameter_information, used_dict, kmer, big_reads_path, r
     :return:
     '''
     stepSize = parameter_information["step"]
-    out_dir = parameter_information["out_dir"]
+    out_dir = parameter_information["out"]
     infile = open(big_reads_path, "rb")
 
     for _ in infile:
@@ -791,7 +791,7 @@ def my_filter_main(configuration_information):
     single = configuration_information["single"]
     thread = configuration_information["thread_number"]
     wordsize = configuration_information["k1"]
-    out_dir = configuration_information["out_dir"]
+    out_dir = configuration_information["out"]
     step = configuration_information["step_length"]
     reference = configuration_information["reference"]
     data_size = configuration_information["data_size"]
@@ -806,7 +806,7 @@ def my_filter_main(configuration_information):
     else:
         limit_thread = thread
     parameter_information = {"data1": data1, "data2": data2, "single": single,
-                             "thread": thread, "wordsize": wordsize, "out_dir": out_dir, "step": step,
+                             "thread": thread, "wordsize": wordsize, "out": out_dir, "step": step,
                              "reference": reference, "data_size": data_size, "filter_csv_path": filter_csv_path
                              }
 
@@ -837,10 +837,11 @@ def my_filter_main(configuration_information):
 
     size = get_size(reference)  # 3.500
     ref_limit_size = 3.53 * 1024 * 1024  # 353*10*1000bp
-    combine_flag = 1
+    combine_flag = 1  #合并多线程输出的结果
 
     if sys.platform in ('darwin'):
-        multiprocessing.set_start_method('fork')
+        # multiprocessing.set_start_method('fork')
+        multiprocessing.set_start_method('fork', force=True) #macos
     if data1 and data2:
         if sys.platform in ("win32") and size >= ref_limit_size or thread == 1:
             reads_length = get_reads_length(data1)
@@ -997,8 +998,8 @@ if __name__ == '__main__':
                       help="Single-read, support fastq/fastq.gz/fastq.bz2", metavar="")
     pars.add_argument("-o", "--out", dest="out", help="Specify the result folder",
                       metavar="", required=True)
-    pars.add_argument("-k1", "--kmer1", dest="kmer1", help="length of a word-size [default=17]",
-                      default=17, type=int, metavar="")
+    pars.add_argument("-k1", "--kmer1", dest="kmer1", help="length of a word-size [default=29]",
+                      default=29, type=int, metavar="")
     pars.add_argument("-step_length", metavar="", dest="step_length", type=int,
                       help="the length of the sliding window on the reads, [default=4]", default=4)  # step length
     pars.add_argument("-t", "--thread", metavar="", dest="thread_number", help="Thread", type=int, default=4)
@@ -1023,7 +1024,7 @@ if __name__ == '__main__':
 
     filter_configuration_information = {"data1": data1, "data2": data2, "single": single,
                                         "thread_number": thread_number, "k1": k1,
-                                        "out_dir": out_dir,
+                                        "out": out_dir,
                                         "step_length": step_length,
                                         "reference": reference, "data_size": data_size,
                                         "quiet":quiet

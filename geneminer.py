@@ -19,7 +19,7 @@ import threading
 import time
 import math
 import platform
-from collections import  defaultdict
+from collections import defaultdict
 import shutil
 import random
 import gzip
@@ -28,6 +28,7 @@ import csv
 import copy
 from concurrent.futures import ProcessPoolExecutor
 from concurrent import futures
+from pathlib import Path
 
 '''
 导入第三方库（非标准库）
@@ -37,26 +38,29 @@ from Bio.SeqRecord import SeqRecord
 from Bio.Seq import Seq
 from Bio import pairwise2
 
-
 # import PySimpleGUI as sg
 cur_path = os.path.realpath(sys.argv[0])  # 脚本当前路径
 father_path = os.path.dirname(cur_path)  # 脚本的父目录
 sys.path.append(os.path.join(father_path, "lib"))
 
-from lib.global_var import get_init,set_value,get_value
-from lib.basic import get_absolute,get_platform
-from lib.verify_parameters import check_input,check_k1,check_scaffold,check_datasize,check_k2,check_reference,check_change_seed,check_out_dir,check_limit_count,check_limit_length,check_step_length,check_max_min_length,check_bootstrap_parameter,check_soft_boundary,check_python_version,check_threads_number,print_parameter_information
+from lib.global_var import get_init, set_value, get_value
+from lib.basic import get_absolute, get_platform
+from lib.verify_parameters import check_input, check_k1, check_scaffold, check_datasize, check_k2, check_reference, \
+    check_change_seed, check_out_dir, check_limit_count, check_limit_length, check_step_length, check_max_min_length, \
+    check_bootstrap_parameter, check_soft_boundary, check_python_version, check_threads_number, \
+    print_parameter_information
 from lib.build_reference_database import my_bulid_reference_database_pipeline
 from lib.core_pipeline import CorePipeLine
 from lib.bootstrap_pipeline import my_bootstrap_pipeline_main
 from lib.pack_results import my_pack_results_pipeline_main
 
-my_version = 'Version 1.0b build 20220122'
+my_version = 'Version 1.0b build 20230901'
 my_cite = 'Cite: https://github.com/happywithxpl/GeneMiner'
 get_init()  # 在basic 中已经申明过了
 
+
 def main(args):
-    t1=time.time()
+    t1 = time.time()
     set_value("my_gui_flag", 1)  # 用于判定GUI是否处于运行状态，1代表运行，0代表没有运行
     '''
     从程序外获得的参数信息
@@ -82,8 +86,7 @@ def main(args):
     min_length = args.min
     data_size = args.data_size
     bootstrap_number = args.bootstrap_number
-    quiet=False
-
+    quiet = False
 
     data1 = get_absolute(data1)
     data2 = get_absolute(data2)
@@ -95,7 +98,7 @@ def main(args):
     # 校验信息
     check_python_version()
     out_dir = check_out_dir(out_dir)  # 输出文件夹检测
-    set_value("out_dir", out_dir)
+    set_value("out", out_dir)
 
     check_input(data1, data2, single)
     check_reference(target_reference_fa, target_reference_gb)
@@ -114,10 +117,11 @@ def main(args):
     bootstrap_information = check_bootstrap_parameter(bootstrap_number)  # 自展次数
 
     # 脚本信息
-    cur_path = os.path.realpath(sys.argv[0])  # 脚本当前路径
+    cur_path = Path(__file__).resolve().parent # 脚本当前路径
     cur_path = os.path.dirname(cur_path)  # 脚本的父目录,father_path 覆盖
     filter_path = os.path.join(cur_path, "lib", "my_filter.py")
     assemble_path = os.path.join(cur_path, "lib", "my_assemble.py")
+
     # 文件夹目录
     reference_database = "reference_database"
     filtered_out = "filtered_out"
@@ -148,17 +152,17 @@ def main(args):
                  "bootstrap": bootstrap_information[0],
                  "bootstrap number": bootstrap_information[1],
                  }
-    configuration_information = {"out_dir": out_dir,
+    configuration_information = {"out": out_dir,
                                  "data1": data1, "data2": data2, "single": single,
                                  "rtfa": target_reference_fa, "rtgb": target_reference_gb,
                                  "k1": k1, "k2": k2, "thread_number": thread_number,
                                  "step_length": step_length,
                                  "limit_count": limit_count,
-                                 "limit_min_length": limit_min_length, #limit_min_ratio
-                                 "limit_max_length": limit_max_length, #limit_max_ratio
+                                 "limit_min_length": limit_min_length,  # limit_min_ratio
+                                 "limit_max_length": limit_max_length,  # limit_max_ratio
                                  "scaffold_or_not": scaffold_or_not,
                                  "change_seed": change_seed,
-                                 "max_length": max_length, "min_length": min_length,
+                                 "max_length": max_length, "min_length": min_length,  # max min
                                  "soft_boundary": soft_boundary, "data_size": data_size,
                                  "bootstrap": bootstrap_information[0], "bootstrap_number": bootstrap_information[1],
                                  "reference_database": reference_database,
@@ -171,7 +175,7 @@ def main(args):
                                  "my_software_name": my_software_name,
                                  "system": system,
                                  "filter_path": filter_path, "assemble_path": assemble_path,
-                                 "quiet":quiet
+                                 "quiet": quiet
 
                                  }
 
@@ -189,25 +193,28 @@ def main(args):
     if bootstrap_number:
         my_bootstrap_pipeline_main(configuration_information)
 
-    my_pack_results_pipeline_main(configuration_information)
+    recovered_genes = my_pack_results_pipeline_main(configuration_information)
+    t2 = time.time()
+    whole_time = format(t2 - t1, ".2f")
 
-    t2=time.time()
-
-    whole_time=format(t2-t1,"6.2f")
-
-    print("whole time: {}s".format(whole_time))
-
-
-
+    if recovered_genes > 0:
+        message = "Thank you for using GeneMiner! GeneMiner has successfully mined {} target gene in {}s.".format(
+            recovered_genes,
+            whole_time) if recovered_genes == 1 else "Thank you for using GeneMiner! GeneMiner has successfully mined {} target genes in {}s.".format(
+            recovered_genes, whole_time)
+    else:
+        message = "GeneMiner has failed to mine the target gene within {}s. Please check the manual for a solution.".format(
+            whole_time)
+    print(message)
 
 
 if __name__ == "__main__":
     # signal.signal(signal.SIGINT, signal_handler)  # 检测函数终止退出（ctrl+c） #必须放在主程序中
     # multiprocessing.freeze_support()  # windows上Pyinstaller打包多进程程序需要添加特殊指令
     # set_value("my_gui_flag", 0)  # 用于判定脚本是否跑完，还可以防止run双击覆盖事件
-    parser = argparse.ArgumentParser(usage="%(prog)s <-1 -2|-s>  <-rtfa|rtgb>  <-o>  [options]",
-                                     description="GeneMiner: a software for extracting phylogenetic markers from next generation sequencing data\n"
-                                                 "Version: 1.0.0\n"
+    parser = argparse.ArgumentParser(usage="%(prog)s <-1 -2|-s>  <-rtfa|-rtgb>  <-o>  [options]",
+                                     description="GeneMiner: a tool for extracting phylogenetic markers from next-generation sequencing data\n"
+                                                 "Version: 1.0.1\n"
                                                  "Copyright (C) 2022 Pulin Xie\n"
                                                  "Please contact <xiepulin@stu.edu.scu.cn> if you have any questions",
 
@@ -226,17 +233,16 @@ if __name__ == "__main__":
                                     help="File with reverse paired-end reads (*.fq/*.fq.gz)", metavar="")
 
     basic_option_group.add_argument("-s", "--single", dest="single",
-                                    help="File with unpaired reads (*.fq/*.fq.gz).", metavar="")
+                                    help="File with unpaired reads (*.fq/*.fq.gz) ", metavar="")
     basic_option_group.add_argument("-o", "--out", dest="out", help="Output folder",
                                     metavar="", required=True)
 
     basic_option_group.add_argument("-rtfa", dest="target_reference_fa",
-                                    help="References of target sequences, only support fasta format", metavar="<file|dir>")
-    basic_option_group.add_argument("-rtgb", dest="target_reference_gb",
-                                    help="References of target sequences, only support GenBank format",
+                                    help="Reference of the target gene(s) only supports FASTA format",
                                     metavar="<file|dir>")
-
-
+    basic_option_group.add_argument("-rtgb", dest="target_reference_gb",
+                                    help="Reference of the target gene(s) only supports GenBank format",
+                                    metavar="<file|dir>")
 
     # 高级参数部分
     advanced_option_group = parser.add_argument_group(title="Advanced option")
@@ -251,46 +257,45 @@ if __name__ == "__main__":
                                        type=int, metavar="")
 
     advanced_option_group.add_argument("-d", "--data", dest="data_size",
-                                       help="Specify the number of reads to reduce raw data. If you want to use all the data, you can set as 'all' [default = 'all']",
+                                       help="Specify the number of actually used reads to reduce the computational burden (e.g. 10000000)\nSet to all if you want to use all the data [default = all]",
                                        default='all', metavar="")
 
     advanced_option_group.add_argument("-step_length", metavar="", dest="step_length", type=int,
-                                       help="Step length of the sliding window on the reads [default = 4]", default=4)
+                                       help="Length of the interval when splitting the reads into k-mers [default = 4]", default=4)
     advanced_option_group.add_argument('-limit_count', metavar='', dest='limit_count',
-                                       help='''limit of k-mer count [default=auto]''', required=False,
+                                       help='''The minimum number of times a k-mer should appear in reads,\nused to remove likely erroneous and low-abundance k-mers [default = auto]''', required=False,
                                        default='auto')
     advanced_option_group.add_argument('-limit_min_ratio', metavar='', dest='limit_min_length', type=float,
-                                       help='''The minimum ratio of contig length to reference average length [default = 1.0]''',
-                                       required=False, default=1)
+                                       help='''Minimum ratio of the recovered target gene(s) to the reference's average length [default = 0.9]''',
+                                       required=False, default=0.9)
     advanced_option_group.add_argument('-limit_max_ratio', metavar='', dest='limit_max_length', type=float,
-                                       help='''The maximum ratio of contig length to reference average length [default = 2.0]''',
-                                       required=False, default=2)
+                                       help='''Maximum ratio of the recovered target gene(s) to the reference's average length [default = 2.0]''',
+                                       required=False, default=2.0)
 
     advanced_option_group.add_argument("-change_seed", metavar="", dest="change_seed", type=int,
                                        help='''Times of changing seed [default = 32]''', required=False,
                                        default=32)
-    advanced_option_group.add_argument('-scaffold', metavar="", dest="scaffold", type=str, help='''Make scaffold''',
+    advanced_option_group.add_argument('-scaffold', metavar="", dest="scaffold", type=str, help='''Make scaffolds (in beta)''',
                                        default=False)
-    advanced_option_group.add_argument("-max", dest="max", help="The maximum length of contigs to be retained [default = 5000]",
+    advanced_option_group.add_argument("-max", dest="max",
+                                       help="The maximum length of contigs to be retained [default = 5000]",
                                        default=5000,
                                        type=int, metavar="")
-    advanced_option_group.add_argument("-min", dest="min", help="The minimum length of contigs to be retained [default = 300]",
-                                       default=300,
+    advanced_option_group.add_argument("-min", dest="min",
+                                       help="The minimum length of contigs to be retained [default = 0]",
+                                       default=0,
                                        type=int, metavar="")
     advanced_option_group.add_argument("-t", "--thread",
-                                       help="Number of threads [default = 'auto']",
+                                       help="Number of threads [default = auto]",
                                        default="auto", metavar="")
     advanced_option_group.add_argument("-b", "--boundary", dest="soft_boundary",
-                                       help="The length of the extension along both sides of the target sequence [default = 75]",
+                                       help="Length of the extension along both sides of the recovered target gene\nSet to a large value (e.g. 10000) if you want to retain the complete assembly\nRecommended length is 0.5 * reads length [default = 75]",
                                        default=75, type=int, metavar="")
 
     advanced_option_group.add_argument("-bn", "--bootstrap", dest="bootstrap_number", type=int,
-                                       help="Number of resampling based on nucleotide substitution model",
+                                       help="Specify the bootstrap number\nEvaluate the assembly results based on the base substitution model and repeated resampling",
                                        metavar="")
     args = parser.parse_args()
 
     main(args)
     # geneminer_GUI()
-
-
-

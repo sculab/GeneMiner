@@ -32,7 +32,7 @@ class CorePipeLine():
         self.data1=configuration_information["data1"]
         self.data2=configuration_information["data2"]
         self.single=configuration_information["single"]
-        self.out_dir = configuration_information["out_dir"]
+        self.out_dir = configuration_information["out"]
 
         self.k1=configuration_information["k1"]
         self.k2=configuration_information["k2"]
@@ -47,6 +47,7 @@ class CorePipeLine():
         self.min_length=configuration_information["min_length"]
         self.thread_number=configuration_information["thread_number"]
         self.quiet=configuration_information["quiet"]
+        self.soft_boundary=configuration_information["soft_boundary"]
 
 
         self.reference_database=configuration_information["reference_database"]
@@ -81,7 +82,7 @@ class CorePipeLine():
         filter_configuration_information={
             "data1":data1,"data2":data2,"single":single,
             "thread_number":thread_number,"k1":k1,
-            "out_dir":filtered_out_path,"step_length":step_length,
+            "out":filtered_out_path,"step_length":step_length,
             "reference":reference_database_path,"data_size":data_size,
             "quiet":quiet
         }
@@ -101,6 +102,7 @@ class CorePipeLine():
         k2 = self.k2
         out_dir = self.out_dir
         quiet=self.quiet
+        soft_boundary=self.soft_boundary
 
 
         files = get_file_list(filtered_out_path)
@@ -115,8 +117,9 @@ class CorePipeLine():
             "limit_min_length": limit_min_length, "limit_max_length": limit_max_length,
             "change_seed": change_seed,
             "scaffold_or_not": scaffold_or_not,
-            "out_dir": out_dir,
-            "quiet":quiet
+            "out": out_dir,
+            "quiet":quiet,
+            "soft_boundary": soft_boundary
         }
         my_assemble_main(assemble_configuration_information)
 
@@ -168,81 +171,82 @@ class CorePipeLine():
             shutil.copy(i,new_path)
 
 
-if __name__ == '__main__':
-    data1 = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeeee10 重构bootstrap\example\data1_100w.fq"
-    data2 = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeeee10 重构bootstrap\example\data1_100w.fq"
-    single = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeeee10 重构bootstrap\example\data1_100w.fq"
-
-    out_dir = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeeee10 重构bootstrap\example\cp_out"
-    rtfa = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeeee10 重构bootstrap\example\cp_gene"
-    rtgb = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\ref_gb\chuanxiong.gb"
-
-
-    k1=17
-    k2=31
-    data_size='all'
-    step_length=4
-    limit_count=-1
-    limit_min_length=0.5
-    limit_max_length=2
-    change_seed=32
-    scaffold_or_not=True
-    max_length = 5000
-    min_length = 300
-    thread_number=4
-    soft_boundary = 0
-    bootstrap_information=[True,10]
-    bootstrap=bootstrap_information[0]
-    bootstrap_number=bootstrap_information[1]
-    quiet=False
-
-
-
-    reference_database = "reference_database"
-    filtered_out = "filtered_out"
-    assembled_out = "assembled_out"
-    bootstrap_out = "bootstrap_out"
-    GM_results = "GM_results"
-    results_log = "results.log"
-    bootstrap_data_set = "bootstrap_data_set.fasta"
-    bootstrap_concensus = "bootstrap_concensus.fasta"
-
-
-    filter_path=r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\lib\my_filter.py"
-    assemble_path=r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\lib\my_assemble.py"
-
-
-    #其他信息
-    my_software_name = "GM"
-
-
-    configuration_information = {"out_dir": out_dir,
-                                 "data1": data1, "data2": data2, "single": single,
-                                 "rtfa": rtfa, "rtgb": rtgb,
-                                 "k1": k1, "k2": k2, "thread_number": thread_number,
-                                 "step_length": step_length,
-                                 "limit_count": limit_count,
-                                 "limit_min_length": limit_min_length,
-                                 "limit_max_length": limit_max_length,
-                                 "change_seed": change_seed,
-                                 "scaffold_or_not":scaffold_or_not,
-                                 "max_length": max_length, "min_length": min_length,
-                                 "soft_boundary": soft_boundary, "data_size": data_size,
-                                 "bootstrap": bootstrap_information[0], "bootstrap_number": bootstrap_information[1],
-                                 "reference_database": reference_database,
-                                 "filtered_out": filtered_out, "assembled_out": assembled_out,
-                                 "bootstrap_out": bootstrap_out,
-                                 "GM_results": GM_results,
-                                 "results_log": results_log,
-                                 "bootstrap_data_set": bootstrap_data_set,
-                                 "bootstrap_concensus": bootstrap_concensus,
-                                 "my_software_name": my_software_name,
-                                 "filter_path": filter_path, "assemble_path": assemble_path,
-                                 "quiet":quiet
-
-                                 }
-    my_core_pipeline=CorePipeLine(configuration_information)
-    # my_core_pipeline.filter_pipeline()
-    # my_core_pipeline.assemble_pipeline()
-    my_core_pipeline.get_results_contig()
+# if __name__ == '__main__':
+#     data1 = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeeee10 重构bootstrap\example\data1_100w.fq"
+#     data2 = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeeee10 重构bootstrap\example\data1_100w.fq"
+#     single = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeeee10 重构bootstrap\example\data1_100w.fq"
+#
+#     out = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeeee10 重构bootstrap\example\cp_out"
+#     rtfa = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeeee10 重构bootstrap\example\cp_gene"
+#     rtgb = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\ref_gb\chuanxiong.gb"
+#
+#
+#     k1=17
+#     k2=31
+#     data_size='all'
+#     step_length=4
+#     limit_count=-1
+#     limit_min_length=0.5
+#     limit_max_length=2
+#     change_seed=32
+#     scaffold_or_not=True
+#     max_length = 5000
+#     min_length = 300
+#     thread_number=4
+#     soft_boundary = 0
+#     bootstrap_information=[True,10]
+#     bootstrap=bootstrap_information[0]
+#     bootstrap_number=bootstrap_information[1]
+#     quiet=False
+#
+#
+#
+#     reference_database = "reference_database"
+#     filtered_out = "filtered_out"
+#     assembled_out = "assembled_out"
+#     bootstrap_out = "bootstrap_out"
+#     GM_results = "GM_results"
+#     results_log = "results.log"
+#     bootstrap_data_set = "bootstrap_data_set.fasta"
+#     bootstrap_concensus = "bootstrap_concensus.fasta"
+#
+#
+#     filter_path=r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\lib\my_filter.py"
+#     assemble_path=r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\lib\my_assemble.py"
+#
+#
+#     #其他信息
+#     my_software_name = "GM"
+#
+#
+#     configuration_information = {"out": out,
+#                                  "data1": data1, "data2": data2, "single": single,
+#                                  "rtfa": rtfa, "rtgb": rtgb,
+#                                  "k1": k1, "k2": k2, "thread_number": thread_number,
+#                                  "step_length": step_length,
+#                                  "limit_count": limit_count,
+#                                  "limit_min_length": limit_min_length,
+#                                  "limit_max_length": limit_max_length,
+#                                  "change_seed": change_seed,
+#                                  "scaffold_or_not":scaffold_or_not,
+#                                  "max_length": max_length, "min_length": min_length,
+#                                  "soft_boundary": soft_boundary, "data_size": data_size,
+#                                  "bootstrap": bootstrap_information[0], "bootstrap_number": bootstrap_information[1],
+#                                  "reference_database": reference_database,
+#                                  "filtered_out": filtered_out, "assembled_out": assembled_out,
+#                                  "bootstrap_out": bootstrap_out,
+#                                  "GM_results": GM_results,
+#                                  "results_log": results_log,
+#                                  "bootstrap_data_set": bootstrap_data_set,
+#                                  "bootstrap_concensus": bootstrap_concensus,
+#                                  "my_software_name": my_software_name,
+#                                  "filter_path": filter_path, "assemble_path": assemble_path,
+#                                  "quiet":quiet,
+#
+#
+#                                  }
+#     my_core_pipeline=CorePipeLine(configuration_information)
+#     # my_core_pipeline.filter_pipeline()
+#     # my_core_pipeline.assemble_pipeline()
+#     my_core_pipeline.get_results_contig()
 
