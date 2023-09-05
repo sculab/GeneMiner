@@ -66,7 +66,7 @@ scripts_to_install = ["geneminer.py"]
 
 setup(
     name="GeneMiner",
-    version="1.0.1",
+    version="1.1",
     author="xiepulin",
     author_email="xiepulin@stu.scu.edu.cn , happywithxpl@126.com",
     description="""GeneMiner : a tool for extracting phylogenetic markers from next-generation sequencing data""",

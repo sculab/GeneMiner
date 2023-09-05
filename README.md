@@ -30,9 +30,9 @@ For macOS:
 git clone https://github.com/sculab/GeneMiner.git
 cd GeneMiner
 pip install -r requirements.txt --user
-python geneminer-gui.py
+python geneminer_gui.py
 ```
-![图片](https://github.com/sculab/GeneMiner/blob/main/GeneMiner_GUI.png)
+![图片](https://github.com/sculab/GeneMiner/blob/main/imgs/gui.png)
 
 ## **GeneMiner with command (cmd)**
 
@@ -193,7 +193,7 @@ GeneMiner-GUI is straightforward, simple to use, and ideal for lightweight users
 
 For GeneMiner-GUI, you must set `Data1`, `Data2` or `Single reads` under the `Data` module, `Ref.(fasta)` or `Ref.(gb)` under the `Reference` module and  `Output Folder` under the `Outout` module as below:
 
-![图片](https://github.com/sculab/GeneMiner/blob/main/Run_GeneMiner_GUI.png)
+![图片](https://github.com/sculab/GeneMiner/blob/main/imgs/gui_working.png)
 
 **Run**
 
