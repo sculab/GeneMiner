@@ -657,7 +657,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(usage="%(prog)s <-1 -2|-s>  <-rtfa|-rtgb>  <-o>  [options]",
                                      description="GeneMiner: a tool for extracting phylogenetic markers from next-generation sequencing data\n"
                                                  "Version: 1.0.1\n"
-                                                 "Copyright (C) 2022 Pulin Xie\n"
+                                                 "Copyright (C) 2023 Pulin Xie\n"
                                                  "Please contact <xiepulin@stu.edu.scu.cn> if you have any questions",
 
                                      formatter_class=argparse.RawTextHelpFormatter,

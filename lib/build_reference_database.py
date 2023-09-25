@@ -35,7 +35,7 @@ class Extract_reference():
         self.rtfa=configuration_information["rtfa"]                   #参考基因组
         self.rtgb = configuration_information["rtgb"]  # 参考基因组
         # self.soft_boundary=configuration_information["soft_boundary"] #软边界
-        self.soft_boundary=0  #2022-10-31 在my_assemble中新增更广义的软边界，即处理组装结果而不是参考序列
+        self.soft_boundary=0  #2023-10-31 在my_assemble中新增更广义的软边界，即处理组装结果而不是参考序列
         self.gene_max_length=configuration_information["max_length"]  #基因最大长度
         self.gene_min_length=configuration_information["min_length"]   #基因最小长度
         self.reference_database=configuration_information["reference_database"]  #"reference_database"

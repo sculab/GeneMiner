@@ -472,7 +472,7 @@ def print_parameter_information(parameter_information_dict):
     print(symbol*22,flush=True)
     header="GeneMiner: a software for extracting phylogenetic markers from next generation sequencing data\n" \
            "Version: 1.0\n" \
-           "Copyright (C) 2022 Pulin Xie"
+           "Copyright (C) 2023 Pulin Xie"
 
 
     print(header,flush=True)
