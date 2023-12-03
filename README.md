@@ -23,16 +23,16 @@ Users on Windows, macOS, and Linux can run GeneMiner directly from the command l
 
 For individuals who are not accustomed to utilizing the command line or for light use, we advise using the GUI version. 
 
-For windows: Download the corresponding version of the packaged GUI from [here](https://github.com/yyscu/Geneminer/releases/latest) and double-click to run it.
+For windows: Download the corresponding version of the packaged GUI from [here](https://gitee.com/sculab/Geneminer/releases/latest) and double-click to run it.
 
 For macOS: 
 ```shell
-git clone https://github.com/yyscu/GeneMiner.git
+git clone https://gitee.com/sculab/GeneMiner.git
 cd GeneMiner
 pip install -r requirements.txt --user
 python geneminer_gui.py
 ```
-![图片](https://github.com/yyscu/GeneMiner/blob/main/imgs/gui.png)
+![图片](https://gitee.com/sculab/GeneMiner/raw/main/imgs/gui.png)
 
 **Note**: Please be aware that on certain operating systems, you might need to use 'pip3' and 'python3' instead of 'pip' and 'python' when running commands.
 
@@ -49,7 +49,7 @@ python geneminer_gui.py
 Clone GeneMiner's repository directly and build it as below:
 
 ```shell
-git clone https://github.com/yyscu/GeneMiner.git
+git clone https://gitee.com/sculab/GeneMiner.git
 cd GeneMiner
 python setup.py install --record logName --user #Add 'geneminer.py' to the '$PATH' 
 geneminer.py -h
@@ -65,10 +65,10 @@ cat logName | xargs rm -rf
 
 **Source code installation**
 
- Download the source distribution from the [release](https://github.com/yyscu/Geneminer/releases/latest) and  install dependencies:
+ Download the source distribution from the [release](https://gitee.com/sculab/Geneminer/releases/latest) and  install dependencies:
 
 ```shell
-wget -c https://github.com/yyscu/GeneMiner/archive/refs/tags/geneminer_v1.1.tar.gz
+wget -c https://gitee.com/sculab/GeneMiner/archive/refs/tags/geneminer_v1.1.tar.gz
 tar geneminer_v1.1.tar.gz
 cd  geneminer_v1.1
 python setup.py install --record logName --user
@@ -87,10 +87,10 @@ cat logName | xargs rm -rf
 
 If both of the above methods fail or you want to have a deeper control of GeneMiner, you can use a more flexible method.
 
-- Download the GeneMiner's distribution from  [here](https://github.com/yyscu/Geneminer/releases/latest).
+- Download the GeneMiner's distribution from  [here](https://gitee.com/sculab/Geneminer/releases/latest).
 
 ```shell
-wget -c https://github.com/yyscu/GeneMiner/archive/refs/tags/geneminer_v1.1.tar.gz
+wget -c https://gitee.com/sculab/GeneMiner/archive/refs/tags/geneminer_v1.1.tar.gz
 tar geneminer_v1.1.tar.gz
 ```
 
@@ -195,7 +195,7 @@ GeneMiner-GUI is straightforward, simple to use, and ideal for lightweight users
 
 For GeneMiner-GUI, you must set `Data1`, `Data2` or `Single reads` under the `Data` module, `Ref.(fasta)` or `Ref.(gb)` under the `Reference` module and  `Output Folder` under the `Outout` module as below:
 
-![图片](https://github.com/yyscu/GeneMiner/blob/main/imgs/gui_working.png)
+![图片](https://gitee.com/sculab/GeneMiner/raw/main/imgs/gui_working.png)
 
 **Run**
 
@@ -251,14 +251,14 @@ The output directory contains  `reference_database`、`filtered_out `、`assembl
 
 # User manual
 
-A more complete manual is here: https://github.com/yyscu/GeneMiner/blob/main/GeneMiner_User_Guide.pdf
+A more complete manual is here: https://gitee.com/sculab/GeneMiner/blob/main/GeneMiner_User_Guide.pdf
 
 # Contact
 
-Please check [Geneminer's homepage](https://github.com/yyscu/GeneMiner) first. If something is wrong when running GeneMiner, please do not be surprised and report it to us. We usually have quick response to bugs.
+Please check [Geneminer's homepage](https://gitee.com/sculab/GeneMiner) first. If something is wrong when running GeneMiner, please do not be surprised and report it to us. We usually have quick response to bugs.
 
-- Find Questions & Answers at [GeneMiner Discussions](https://github.com/yyscu/GeneMiner/discussions/categories/q-a): **Recommended**
-- Report Bugs & Issues at [GeneMiner Issues](https://github.com/yyscu/GeneMiner/issues): Please avoid repetitive or irrelevant issues
+- Find Questions & Answers at [GeneMiner Discussions](https://gitee.com/sculab/GeneMiner/discussions/categories/q-a): **Recommended**
+- Report Bugs & Issues at [GeneMiner Issues](https://gitee.com/sculab/GeneMiner/issues): Please avoid repetitive or irrelevant issues
 
 **DO NOT** directly write to us with your questions, instead please post the questions **publicly**, using above platforms  Our emails (yyu@scu.edu.cn, 1791173948@qq.com) are only for receiving public question alert and private data (if applied) associated with those public questions. When you send your private data to us, enclose the email with a link where you posted the question. Our only reply emails will be a receiving confirmation, while our answers will be posted in a public place.
 
