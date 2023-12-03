@@ -56,7 +56,7 @@ from lib.bootstrap_pipeline import my_bootstrap_pipeline_main
 from lib.pack_results import my_pack_results_pipeline_main
 
 my_version = 'Version 1.0b build 20230901'
-my_cite = 'Cite: https://github.com/sculab/GeneMiner'
+my_cite = 'Cite: https://github.com/yyscu/GeneMiner'
 get_init()  # 在basic 中已经申明过了
 
 
@@ -215,9 +215,9 @@ if __name__ == "__main__":
     # set_value("my_gui_flag", 0)  # 用于判定脚本是否跑完，还可以防止run双击覆盖事件
     parser = argparse.ArgumentParser(usage="%(prog)s <-1 -2|-s>  <-rtfa|-rtgb>  <-o>  [options]",
                                      description="GeneMiner: a tool for extracting phylogenetic markers from next-generation sequencing data\n"
-                                                 "Version: 1.0.1\n"
-                                                 "Copyright (C) 2023 Pulin Xie\n"
-                                                 "Please contact <xiepulin@stu.edu.scu.cn> if you have any questions",
+                                                 "Version: 1.1.1\n"
+                                                 "(C) 2023 Pulin Xie & Y. YU\n"
+                                                 "Please contact <yyu@scu.edu.cn> if you have any questions",
 
                                      formatter_class=argparse.RawTextHelpFormatter,
                                      # help信息中会自动取消掉换行符和空格，argparse.RawTextHelpFormatter

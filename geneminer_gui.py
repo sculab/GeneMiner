@@ -52,7 +52,7 @@ from lib.bootstrap_pipeline import my_bootstrap_pipeline_main
 from lib.pack_results import my_pack_results_pipeline_main
 
 my_version = 'Version 1.1b build 20230901'
-my_cite = 'Cite: https://github.com/sculab/GeneMiner'
+my_cite = 'Cite: https://github.com/yyscu/GeneMiner'
 get_init()  # 在basic 中已经申明过了
 
 
@@ -387,7 +387,7 @@ def geneminer_GUI():
     layout = [
         [sg.Image(icon_48), sg.Text('GeneMiner', justification="left", font=("Arial", 24, "bold"))],
         [sg.T('Authors: Xie Pulin, Guo Yongling, Zhang Zhen, Yu Yan', font=("Arial", 12)),
-         sg.T('Email: xiepulin@stu.scu.edu.cn', font=("Arial", 12))],
+         sg.T('Email: yyu@scu.edu.cn', font=("Arial", 12))],
         [sg.Pane([sg.Column(left_col, element_justification='l', expand_x=True, expand_y=True),
                   sg.Column(right_col, element_justification='c', expand_x=True, expand_y=True)], orientation='h',
                  relief=sg.RELIEF_SUNKEN, key='-PANE-')],
@@ -656,9 +656,9 @@ if __name__ == "__main__":
     #-o 参数不能设置为required=True 否则无法打开
     parser = argparse.ArgumentParser(usage="%(prog)s <-1 -2|-s>  <-rtfa|-rtgb>  <-o>  [options]",
                                      description="GeneMiner: a tool for extracting phylogenetic markers from next-generation sequencing data\n"
-                                                 "Version: 1.0.1\n"
-                                                 "Copyright (C) 2023 Pulin Xie\n"
-                                                 "Please contact <xiepulin@stu.edu.scu.cn> if you have any questions",
+                                                 "Version: 1.1.1\n"
+                                                 "Copyright (C) 2023 Pulin Xie & Y.YU\n"
+                                                 "Please contact <yyu@scu.edu.cn> if you have any questions",
 
                                      formatter_class=argparse.RawTextHelpFormatter,
                                      # help信息中会自动取消掉换行符和空格，argparse.RawTextHelpFormatter
