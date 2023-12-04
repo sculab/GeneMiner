@@ -1,42 +1,41 @@
 
-# Overview
-
+# 1. Overview
+ 
 GeneMiner is a software for extracting phylogenetic markers from next-generation sequencing (NGS) data. (i) With GeneMiner, users can accurately and efficiently obtain a large number of phylogenetic markers  from NGS data at an economical cost. For example, extract all or part of mitochondrial/chloroplast genes and highly repetitive regions (e.g., nrDNA) in the nuclear genome from genome skimming data. Extract single-to-low-copy genes from transcriptome sequencing data, etc. GeneMiner broadens the choice of phylogenetic markers from the most basic data level. (ii) GeneMiner proposes a novel verification method based on the base substitution model and repetitive resampling, which can statistically evaluate the impact of the reference on the assembly. (iii) GeneMiner provides a cross-platform graphical interface and can be easily docked to downstream phylogenetic analysis processes. In addition, GeneMiner can be applied to the research of DNA barcode extraction, customs quarantine, specific functional gene exploration, and other research, which has broad application prospects.
 
 
+## Dependencies
 
-# Dependencies
-
-[Python](https://www.python.org/downloads/) 3.6 or later, along with the Python libraries.
+- [Python](https://www.python.org/downloads/) 3.6 or later, along with the Python libraries.
 
 - [biopython](http://biopython.org/wiki/Main_Page) 1.79 or later
 
 
 
-# Download and install
+# 2. Download and install
 
 GeneMiner is an easy-to-use software written in python3, which is provided for x86-64 systems running GNU/Linux, macOS (version 10.13 or higher), and Windows (64-bit, version 7 or higher).
 
 Users on Windows, macOS, and Linux can run GeneMiner directly from the command line. We also offer a more convenient GUI version for Windows and macOS users.
 
-## GeneMiner with Graphical User Interface (GUI)
+## 2.1 GeneMiner with Graphical User Interface (GUI)
 
-For individuals who are not accustomed to utilizing the command line or for light use, we advise using the GUI version. 
+For individuals who are not accustomed to utilizing the command line, we advise using the GUI version. 
 
-For windows: Download the corresponding version of the packaged GUI from [here](https://gitee.com/sculab/Geneminer/releases/latest) and double-click to run it.
+For windows: Download the corresponding version of the packaged GUI from [here](https://github.com/sculab/Geneminer/releases/latest) and double-click to run it.
 
 For macOS: 
 ```shell
-git clone https://gitee.com/sculab/GeneMiner.git
+git clone https://github.com/sculab/GeneMiner.git
 cd GeneMiner
 pip install -r requirements.txt --user
 python geneminer_gui.py
 ```
-![图片](https://gitee.com/sculab/GeneMiner/raw/main/imgs/gui.png)
+![图片](https://github.com/sculab/GeneMiner/raw/main/imgs/gui.png)
 
 **Note**: Please be aware that on certain operating systems, you might need to use 'pip3' and 'python3' instead of 'pip' and 'python' when running commands.
 
-## **GeneMiner with command (cmd)**
+## 2.2 GeneMiner with command (cmd)
 
 - option1  **Cloning the GitHub repository**
 - option2  **Source code installation**
@@ -49,7 +48,7 @@ python geneminer_gui.py
 Clone GeneMiner's repository directly and build it as below:
 
 ```shell
-git clone https://gitee.com/sculab/GeneMiner.git
+git clone https://github.com/sculab/GeneMiner.git
 cd GeneMiner
 python setup.py install --record logName --user #Add 'geneminer.py' to the '$PATH' 
 geneminer.py -h
@@ -65,10 +64,10 @@ cat logName | xargs rm -rf
 
 **Source code installation**
 
- Download the source distribution from the [release](https://gitee.com/sculab/Geneminer/releases/latest) and  install dependencies:
+ Download the source distribution from the [release](https://github.com/sculab/Geneminer/releases/latest) and  install dependencies:
 
 ```shell
-wget -c https://gitee.com/sculab/GeneMiner/archive/refs/tags/geneminer_v1.1.tar.gz
+wget -c https://github.com/sculab/GeneMiner/archive/refs/tags/geneminer_v1.1.tar.gz
 tar geneminer_v1.1.tar.gz
 cd  geneminer_v1.1
 python setup.py install --record logName --user
@@ -87,10 +86,10 @@ cat logName | xargs rm -rf
 
 If both of the above methods fail or you want to have a deeper control of GeneMiner, you can use a more flexible method.
 
-- Download the GeneMiner's distribution from  [here](https://gitee.com/sculab/Geneminer/releases/latest).
+- Download the GeneMiner's distribution from  [here](https://github.com/sculab/Geneminer/releases/latest).
 
 ```shell
-wget -c https://gitee.com/sculab/GeneMiner/archive/refs/tags/geneminer_v1.1.tar.gz
+wget -c https://github.com/sculab/GeneMiner/archive/refs/tags/geneminer_v1.1.tar.gz
 tar geneminer_v1.1.tar.gz
 ```
 
@@ -118,13 +117,13 @@ geneminer.py -h
 
 
 
-# Running GeneMiner
+# 3. Running GeneMiner
 
 GeneMiner takes the reference sequences and FASTQ format sequencing files as input and the recovered phylogenetic markers as output. We have prepared a simulated dataset of `Arabidopsis thaliana` to help you quickly grasp the main usage of GeneMiner. The file were included in **DEMO** folder.
 
 
 
-## Running GeneMiner command-line
+## 3.1 Running GeneMiner command-line
 
 - Mining single target gene from genome skimming data
 
@@ -189,13 +188,13 @@ geneminer.py -1 Arabidopsis_thaliana_sim1.fq.gz -2 Arabidopsis_thaliana_sim2.fq.
 
 
 
-## Running GeneMiner-GUI
+## 3.2 Running GeneMiner-GUI
 
 GeneMiner-GUI is straightforward, simple to use, and ideal for lightweight users. Considering the memory limit and the excessive time overhead, we recommend you utilize GeneMiner-cmd when you run large-scale data
 
 For GeneMiner-GUI, you must set `Data1`, `Data2` or `Single reads` under the `Data` module, `Ref.(fasta)` or `Ref.(gb)` under the `Reference` module and  `Output Folder` under the `Outout` module as below:
 
-![图片](https://gitee.com/sculab/GeneMiner/raw/main/imgs/gui_working.png)
+![图片](https://github.com/sculab/GeneMiner/raw/main/imgs/gui_working.png)
 
 **Run**
 
@@ -249,22 +248,22 @@ The output directory contains  `reference_database`、`filtered_out `、`assembl
 
 
 
-# User manual
+# 4. User manual
 
-A more complete manual is here: https://gitee.com/sculab/GeneMiner/blob/main/GeneMiner_User_Guide.pdf
+A more complete manual is here: https://github.com/sculab/GeneMiner/blob/main/GeneMiner_User_Guide.pdf
 
-# Contact
+# 5. Contact
 
-Please check [Geneminer's homepage](https://gitee.com/sculab/GeneMiner) first. If something is wrong when running GeneMiner, please do not be surprised and report it to us. We usually have quick response to bugs.
+Please check [Geneminer's homepage](https://github.com/sculab/GeneMiner) first. If something is wrong when running GeneMiner, please do not be surprised and report it to us. We usually have quick response to bugs.
 
-- Find Questions & Answers at [GeneMiner Discussions](https://gitee.com/sculab/GeneMiner/discussions/categories/q-a): **Recommended**
-- Report Bugs & Issues at [GeneMiner Issues](https://gitee.com/sculab/GeneMiner/issues): Please avoid repetitive or irrelevant issues
+- Find Questions & Answers at [GeneMiner Discussions](https://github.com/sculab/GeneMiner/discussions/categories/q-a): **Recommended**
+- Report Bugs & Issues at [GeneMiner Issues](https://github.com/sculab/GeneMiner/issues): Please avoid repetitive or irrelevant issues
 
 **DO NOT** directly write to us with your questions, instead please post the questions **publicly**, using above platforms  Our emails (yyu@scu.edu.cn, 1791173948@qq.com) are only for receiving public question alert and private data (if applied) associated with those public questions. When you send your private data to us, enclose the email with a link where you posted the question. Our only reply emails will be a receiving confirmation, while our answers will be posted in a public place.
 
 
 
-# Citation
+# 6. Citation
 
 When you use GeneMiner please cite:
 
