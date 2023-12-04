@@ -1,16 +1,13 @@
 <h1 align="center">GeneMiner Manual</h1>
 
 
-
-[TOC]
-
 # 1. Overview
 
 ​		GeneMiner is a software for extracting phylogenetic markers from next generation sequencing (NGS) data.With GeneMiner, users can accurately and efficiently obtain a large number of target sequences from a wide range of histological data at a very low cost, such as: all or part of the chloroplast/mitochondrial genome, highly repetitive regions in the nuclear genome (e.g. nrDNA), etc. from shallow whole-genome sequencing data; single-low copy genes from transcriptome sequencing data, etc. GeneMiner improves existing phylogenetic research strategies at the most basic data level, and has significant advantages in reducing experimental costs and expanding phylogenetic marker selection. In addition, GeneMiner can be applied to the extraction of DNA barcodes, customs inspection and quarantine, mining of specific functional genes and other research, which has broad application prospects.
 
 # 2. Download and install
 
-​		GeneMiner is open source under the GPL-3.0 license, which is distributed through the github repository (https://github.com/happywithxpl/GeneMiner/releases). Please be sure to follow our github page to stay up-to-date with the latest code changes. We do not provide any support for previous versions of the code! Version numbers follow the notation x.y.z, where x changes with major code reorganizations, y changes when new features are added, and z changes with bug fixes.
+​		GeneMiner is open source under the GPL-3.0 license, which is distributed through the github repository (https://gitee.com/sculab/GeneMiner/releases). Please be sure to follow our github page to stay up-to-date with the latest code changes. We do not provide any support for previous versions of the code! Version numbers follow the notation x.y.z, where x changes with major code reorganizations, y changes when new features are added, and z changes with bug fixes.
 
 ​		GeneMiner is an easy-to-use software written in python, which is is provided for x86-64 systems running GNU/Linux, macOS (version 10.13 or higher) and Windows (64-bit, version 7 or higher).
 
@@ -18,7 +15,7 @@
 
 ## 2.1 GeneMiner with GUI
 
-​		We strongly recommend using the GUI version for users who are not familiar with the command line or light use.Download the corresponding version of the packaged GUI from [here](:https://github.com/happywithxpl/GeneMiner/releases) and double click to run it.
+​		We strongly recommend using the GUI version for users who are not familiar with the command line or light use. Download the corresponding version of the packaged GUI from [here](:https://gitee.com/sculab/GeneMiner/releases) and double click to run it.
 
 ![图片](https://gitee.com/sculab/GeneMiner/raw/main/imgs/gui.png)
 
@@ -31,7 +28,7 @@
 Instead of downloading the source distribution as a compressed archive, you could clone the repo and build it as shown below.
 
 ```shell
-git clone https://github.com/happywithxpl/GeneMiner.git
+git clone https://gitee.com/sculab/GeneMiner.git
 cd GeneMiner
 python setup.py install --record logName --user
 geneminer.py -h
@@ -44,7 +41,7 @@ geneminer.py -h
 Download the source distribution from a [release](https://github.com/bpp/bpp/releases)  and  install dependencies, use the following commands:
 
 ```shell
-wget https://github.com/happywithxpl/Geneminer/geneminer-1.0.0-linux-x86_64.tar.gz
+wget hhttps://gitee.com/sculab/GeneMiner/archive/refs/tags/geneminer_v1.1.zip
 tar geneminer_v1.0.0.tar.gz
 cd  GeneMiner_v1.0.0
 python setup.py install --record logName --user
@@ -57,10 +54,10 @@ geneminer.py -h
 
 If both of the above methods fail or you want to have a deeper control of GeneMiner, you can use a more flexible method
 
-- Download the GeneMiner's distribution from  [here](:https://github.com/happywithxpl/GeneMiner/releases).
+- Download the GeneMiner's distribution from  [here](:https://gitee.com/sculab/GeneMiner/releases).
 
 ```shell
-wget https://github.com/happywithxpl/GeneMiner/geneminer-1.0.0-linux-x86_64.tar.gz `
+wget https://gitee.com/sculab/GeneMiner/geneminer-1.0.0-linux-x86_64.tar.gz `
 tar -zvxf geneminer-1.0.0-linux-x86_64.tar.gz
 ```
 
@@ -92,7 +89,7 @@ geneminer.py -h
 
 ​		Before using GeneMiner to mine specific target sequences, we strongly recommend you to know the status of your sequencing data (from Illumina, Roche-454, ABI or other sequencing platforms), including sequencing method, depth, quality, data volume size, etc., which will help you to make a reasonable choice of parameters.
 
-​		Without any options, GeneMiner takes a reference database and a query sequence file as input and produce phylogenetic markers.We have prepared a simulated dataset of `Arabidopsis thaliana` to help you quickly use GeneMiner.you can download them from https://github.com/happywithxpl/GeneMiner-Test
+​		Without any options, GeneMiner takes a reference database and a query sequence file as input and produce phylogenetic markers.We have prepared a simulated dataset of `Arabidopsis thaliana` to help you quickly use GeneMiner.you can download them from https://gitee.com/sculab/GeneMiner-Test
 
 （1）Mining single target sequence
 
@@ -518,9 +515,9 @@ where count represents the frequency of k-mer in the set T, Pos~1~ represents th
 
 # 7. Get help
 
-Please check [Geneminer's homepage](https://github.com/happywithxpl/GeneMiner) first. If your question is running specific,please do not be surprised and report it to us. We usually have quick response to bugs.
+Please check [Geneminer's homepage](https://gitee.com/sculab/GeneMiner) first. If your question is running specific,please do not be surprised and report it to us. We usually have quick response to bugs.
 
-- Find Questions & Answers at [GeneMiner Discussions](https://github.com/happywithxpl/GeneMiner/discussions/categories/q-a): **Recommended**
+- Find Questions & Answers at [GeneMiner Discussions](https://gitee.com/sculab/GeneMiner/discussions/categories/q-a): **Recommended**
 
 - Report Bugs & Issues at [GetOrganelle Issues](https://github.com/Kinggerm/GetOrganelle/issues):
 
