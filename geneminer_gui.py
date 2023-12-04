@@ -281,8 +281,8 @@ def geneminer_GUI():
     filter_frame = [
         [
             sg.Text('K1:', size=(8, 1), justification='right', font=("Arial", 12)),
-            sg.Input(29, key='-k1-', size=(6, 1), font=("Arial", 12), expand_x=False,
-                     tooltip="Length of kmer for filtering reads [default = 29]"),
+            sg.Input(31, key='-k1-', size=(6, 1), font=("Arial", 12), expand_x=False,
+                     tooltip="Length of kmer for filtering reads [default = 31]"),
             sg.Text('Reads:', size=(8, 1), justification='right', font=("Arial", 12)),
             sg.Input("all", key='-n-', size=(6, 1), font=("Arial", 12), expand_x=False,
                      tooltip="Specify the number of actually used reads to reduce the computational burden (e.g. 10000000)\nSet to all if you want to use all the data [default = all]"),
@@ -485,7 +485,7 @@ def geneminer_GUI():
             if values["-k1-"]:
                 args.kmer1 = int(values["-k1-"])
             else:
-                args.kmer1 = 29
+                args.kmer1 = 31
 
             if values["-n-"]:
                 if values["-n-"].upper() == "ALL":
@@ -581,7 +581,7 @@ def geneminer_GUI():
             window['-o-'].update("")
             # 高级参数部分
             #filter
-            window['-k1-'].update("29")
+            window['-k1-'].update(31")
             window['-n-'].update('all')
             window['-step-'].update('4')
             #assemble
@@ -620,7 +620,7 @@ def geneminer_GUI():
             args.out = ""
             #高级参数
             #filter
-            args.kmer1 = 29
+            args.kmer1 = 31
             args.data_size='all'
             args.step_length=4
             #assemble
@@ -690,8 +690,8 @@ if __name__ == "__main__":
     advanced_option_group = parser.add_argument_group(title="Advanced option")
 
     advanced_option_group.add_argument("-k1", "--kmer1", dest="kmer1",
-                                       help="Length of kmer for filtering reads [default = 29]",
-                                       default=29,
+                                       help="Length of kmer for filtering reads [default = 31]",
+                                       default=31,
                                        type=int, metavar="")
     advanced_option_group.add_argument("-k2", "--kmer2", dest="kmer2",
                                        help="Length of kmer for assembling reads [default = 41]",

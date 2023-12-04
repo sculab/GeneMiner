@@ -552,7 +552,7 @@ def my_bootstrap_pipeline_main(configuration_information):
 #     # rtgb = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\ref_gb\chuanxiong.gb"
 #
 #
-#     k1=29
+#     k1=31
 #     k2=31
 #     data_size='all'
 #     step_length=4

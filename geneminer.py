@@ -249,8 +249,8 @@ if __name__ == "__main__":
     advanced_option_group = parser.add_argument_group(title="Advanced option")
 
     advanced_option_group.add_argument("-k1", "--kmer1", dest="kmer1",
-                                       help="Length of kmer for filtering reads [default = 29]",
-                                       default=29,
+                                       help="Length of kmer for filtering reads [default = 31]",
+                                       default=31,
                                        type=int, metavar="")
     advanced_option_group.add_argument("-k2", "--kmer2", dest="kmer2",
                                        help="Length of kmer for assembling reads [default = 41]",

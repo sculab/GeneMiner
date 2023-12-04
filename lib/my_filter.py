@@ -676,7 +676,7 @@ def do_re_filter_loop(parameter_information, re_filtered_reads_whole_bp_dict, re
                 kmer += kmer_add
                 new_kmer = kmer  # 记录本次kmer值
 
-                if kmer > 127:
+                if kmer > 63:
                     sth = [gene_name, k1, old_kmer]
                     mylog(filter_csv_path, sth)
                     break
@@ -998,8 +998,8 @@ if __name__ == '__main__':
                       help="Single-read, support fastq/fastq.gz/fastq.bz2", metavar="")
     pars.add_argument("-o", "--out", dest="out", help="Specify the result folder",
                       metavar="", required=True)
-    pars.add_argument("-k1", "--kmer1", dest="kmer1", help="length of a word-size [default=29]",
-                      default=29, type=int, metavar="")
+    pars.add_argument("-k1", "--kmer1", dest="kmer1", help="length of a word-size [default=31]",
+                      default=31, type=int, metavar="")
     pars.add_argument("-step_length", metavar="", dest="step_length", type=int,
                       help="the length of the sliding window on the reads, [default=4]", default=4)  # step length
     pars.add_argument("-t", "--thread", metavar="", dest="thread_number", help="Thread", type=int, default=4)

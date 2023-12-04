@@ -152,7 +152,7 @@ def my_pack_results_pipeline_main(configuration_information):
 #     rtfa = r"E:\Computer\python\GeneMiner\eeeeeeeee10 重构bootstrap\example\cp_gene"
 #     rtgb = r"D:\Happy_life_and_work\scu\python\Gene_Miner\eeeeeeee9 重构filter\example\ref_gb\chuanxiong.gb"
 #
-#     k1 = 29
+#     k1 = 31
 #     k2 = 41
 #     data_size = 'all'
 #     step_length = 4
