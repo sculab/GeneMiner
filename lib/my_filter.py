@@ -648,7 +648,7 @@ def do_re_filter_loop(parameter_information, re_filtered_reads_whole_bp_dict, re
     :param parameter_information:
     :param re_filtered_reads_whole_bp_dict:
     :param ref_length_dict: 记录参考序列的平均长度，用于计算richness
-    :param re_filter_dict: 记录需要重过滤基因 大于500层或大于10M
+    :param re_filter_dict: 记录需要重过滤基因 大于500x或大于10M
     :param thread_id:  标记线程id
     :param thread:     线程总数
     :param keep_quiet:     是否保持沉默
@@ -796,6 +796,7 @@ def my_filter_main(configuration_information):
     reference = configuration_information["reference"]
     data_size = configuration_information["data_size"]
     quiet=configuration_information["quiet"]
+    re_filter=configuration_information["re_filter"]
 
 
     filter_csv_path = os.path.join(out_dir, "filter.csv")
@@ -900,90 +901,91 @@ def my_filter_main(configuration_information):
 
     ############################## re-filter #############################
     # cutting_line(" Re-Filter ")
-    My_Log_Recorder(message=" Re-Filter ", keep_quiet=quiet, path="", stage="", printout_flag=False,
-                    stored_flag=False, make_a_newline=False, use_cutting_line=True)
+    if re_filter:
+        My_Log_Recorder(message=" Re-Filter ", keep_quiet=quiet, path="", stage="", printout_flag=False,
+                        stored_flag=False, make_a_newline=False, use_cutting_line=True)
 
-    # filtered_limit_size = 0.5 * 1024 * 1024 #for test
-    filtered_limit_size = 10 * 1024 * 1024
-    re_filter_files, no_re_filter_files = get_re_filter_path(out_dir, filtered_limit_size)
-    header = ["gene", "k1", "re_k1"]
-    mylog(filter_csv_path, header)
-    if no_re_filter_files:
-        for i in no_re_filter_files:
-            gene = get_basename(i)
-            sth = [gene, str(wordsize), "None"]
-            mylog(filter_csv_path, sth)
+        # filtered_limit_size = 0.5 * 1024 * 1024 #for test
+        filtered_limit_size = 10 * 1024 * 1024
+        re_filter_files, no_re_filter_files = get_re_filter_path(out_dir, filtered_limit_size)
+        header = ["gene", "k1", "re_k1"]
+        mylog(filter_csv_path, header)
+        if no_re_filter_files:
+            for i in no_re_filter_files:
+                gene = get_basename(i)
+                sth = [gene, str(wordsize), "None"]
+                mylog(filter_csv_path, sth)
 
-    if re_filter_files == []:
-        t3 = time.time()
-        # print("Re-Filter time used: {}s".format(round((t3 - t2), 4)))
-        used_temp_time = format((t3 - t2), ".2f")
-        message="Re-Filter time used: {}s".format(used_temp_time)
-        My_Log_Recorder(message=message, keep_quiet=quiet, path="", stage="", printout_flag=True,
-                        stored_flag=False, make_a_newline=True, use_cutting_line=False)
-        # print("Re-Filter time used: {}s".format(used_temp_time))
-    else:
-        re_filter_ref_files = []
-        for i in re_filter_files:
-            name = get_basename(i)
-            re_filter_ref_path = os.path.join(reference, name + ".fasta")
-            re_filter_ref_files.append(re_filter_ref_path)
+        if re_filter_files == []:
+            t3 = time.time()
+            # print("Re-Filter time used: {}s".format(round((t3 - t2), 4)))
+            used_temp_time = format((t3 - t2), ".2f")
+            message="Re-Filter time used: {}s".format(used_temp_time)
+            My_Log_Recorder(message=message, keep_quiet=quiet, path="", stage="", printout_flag=True,
+                            stored_flag=False, make_a_newline=True, use_cutting_line=False)
+            # print("Re-Filter time used: {}s".format(used_temp_time))
+        else:
+            re_filter_ref_files = []
+            for i in re_filter_files:
+                name = get_basename(i)
+                re_filter_ref_path = os.path.join(reference, name + ".fasta")
+                re_filter_ref_files.append(re_filter_ref_path)
 
-        ref_length_dict = {}  # 参考序列的平均长度
-        filtered_reads_whole_bp_dict = defaultdict(int)  ## 过滤reads总数
-        re_filtered_reads_whole_bp_dict = defaultdict(int)  ## 重过滤reads总数
-        ref_length_dict = get_ref_info(re_filter_ref_files, ref_length_dict)  # ref_length_dict  第一次过滤的参考信息
-        filtered_reads_whole_bp_dict = get_filtered_reads_bp_number(re_filter_files, reads_length,
-                                                                    filtered_reads_whole_bp_dict)
+            ref_length_dict = {}  # 参考序列的平均长度
+            filtered_reads_whole_bp_dict = defaultdict(int)  ## 过滤reads总数
+            re_filtered_reads_whole_bp_dict = defaultdict(int)  ## 重过滤reads总数
+            ref_length_dict = get_ref_info(re_filter_ref_files, ref_length_dict)  # ref_length_dict  第一次过滤的参考信息
+            filtered_reads_whole_bp_dict = get_filtered_reads_bp_number(re_filter_files, reads_length,
+                                                                        filtered_reads_whole_bp_dict)
 
-        # print(ref_length_dict)
-        # print(filtered_reads_whole_bp_dict)
+            # print(ref_length_dict)
+            # print(filtered_reads_whole_bp_dict)
 
-        if not os.path.isdir(os.path.join(out_dir, 'big_reads')):
-            os.mkdir(os.path.join(out_dir, 'big_reads'))
-        re_filter_dict = []
-        for i in zip(ref_length_dict.items(), filtered_reads_whole_bp_dict.items()):
-            temp = {}
-            gene_name = i[0][0]
-            filtered_reads_path = os.path.join(out_dir, gene_name + ".fasta")
-            filtered_reads_path_backup = os.path.join(out_dir, gene_name + "_backup" + ".fasta")
-            richness = int(i[1][1] / i[0][1])
-            size = get_file_physical_size(filtered_reads_path)
+            if not os.path.isdir(os.path.join(out_dir, 'big_reads')):
+                os.mkdir(os.path.join(out_dir, 'big_reads'))
+            re_filter_dict = []
+            for i in zip(ref_length_dict.items(), filtered_reads_whole_bp_dict.items()):
+                temp = {}
+                gene_name = i[0][0]
+                filtered_reads_path = os.path.join(out_dir, gene_name + ".fasta")
+                filtered_reads_path_backup = os.path.join(out_dir, gene_name + "_backup" + ".fasta")
+                richness = int(i[1][1] / i[0][1])
+                size = get_file_physical_size(filtered_reads_path)
 
-            big_reads_path = os.path.join(out_dir, "big_reads", gene_name + ".fasta")
-            if os.path.isfile(reference):
-                ref_path = reference
-            else:
-                ref_path = os.path.join(reference, gene_name + ".fasta")
-            shutil.move(filtered_reads_path, big_reads_path)
-            temp["gene_name"] = gene_name
-            temp["richness"] = richness
-            temp["size"] = size
-            temp["filtered_reads_path"] = filtered_reads_path
-            temp["filtered_reads_path_backup"] = filtered_reads_path_backup
-            temp["ref_path"] = ref_path
-            temp["big_reads_path"] = big_reads_path
-            re_filter_dict.append(temp)
+                big_reads_path = os.path.join(out_dir, "big_reads", gene_name + ".fasta")
+                if os.path.isfile(reference):
+                    ref_path = reference
+                else:
+                    ref_path = os.path.join(reference, gene_name + ".fasta")
+                shutil.move(filtered_reads_path, big_reads_path)
+                temp["gene_name"] = gene_name
+                temp["richness"] = richness
+                temp["size"] = size
+                temp["filtered_reads_path"] = filtered_reads_path
+                temp["filtered_reads_path_backup"] = filtered_reads_path_backup
+                temp["ref_path"] = ref_path
+                temp["big_reads_path"] = big_reads_path
+                re_filter_dict.append(temp)
 
-        if len(re_filter_dict) > 0:
-            thread_list = []
-            for t in range(min(thread, len(re_filter_dict))):  # 减少进程开销
-                p = Process(target=do_re_filter_loop,
-                            args=(parameter_information, re_filtered_reads_whole_bp_dict, ref_length_dict, re_filter_dict,
-                                t, min(thread, len(re_filter_dict)),quiet))
-                thread_list.append(p)
-            for t in thread_list:
-                t.start()
-            for t in thread_list:
-                t.join()
+            if len(re_filter_dict) > 0:
+                thread_list = []
+                for t in range(min(thread, len(re_filter_dict))):  # 减少进程开销
+                    p = Process(target=do_re_filter_loop,
+                                args=(parameter_information, re_filtered_reads_whole_bp_dict, ref_length_dict, re_filter_dict,
+                                    t, min(thread, len(re_filter_dict)),quiet))
+                    thread_list.append(p)
+                for t in thread_list:
+                    t.start()
+                for t in thread_list:
+                    t.join()
 
-        t3 = time.time()
-        print(" " * 50, flush=True, end='\r')  # 之前的信息比较长，冲刷掉
-        used_temp_time = format((t3 - t2), ".2f")
-        message="Re-Filter time used: {}s".format(used_temp_time)
-        My_Log_Recorder(message=message, keep_quiet=quiet, path="", stage="", printout_flag=True,
-                        stored_flag=False, make_a_newline=True, use_cutting_line=False)
-        # print("Re-Filter time used: {}s".format(used_temp_time))
+            t3 = time.time()
+            print(" " * 50, flush=True, end='\r')  # 之前的信息比较长，冲刷掉
+            used_temp_time = format((t3 - t2), ".2f")
+            message="Re-Filter time used: {}s".format(used_temp_time)
+            My_Log_Recorder(message=message, keep_quiet=quiet, path="", stage="", printout_flag=True,
+                            stored_flag=False, make_a_newline=True, use_cutting_line=False)
+            # print("Re-Filter time used: {}s".format(used_temp_time))
 
 
 if __name__ == '__main__':

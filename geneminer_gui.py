@@ -735,7 +735,11 @@ if __name__ == "__main__":
                                        default="auto", metavar="")
     advanced_option_group.add_argument("-b", "--boundary", dest="soft_boundary",
                                        help="Length of the extension along both sides of the recovered target gene\nSet to a large value (e.g. 10000) if you want to retain the complete assembly\nRecommended length is 0.5 * reads length [default = 75]",
-                                       default=75, type=int, metavar="")
+                                       default=0, type=int, metavar="")
+
+    advanced_option_group.add_argument("-rfi", "--re_filter", dest="re-filtering",
+                                       help="Enable (1) or disable (0) re-filtering. [default = 1]",
+                                       default=1, type=int, metavar="")
 
     advanced_option_group.add_argument("-bn", "--bootstrap", dest="bootstrap_number", type=int,
                                        help="Specify the bootstrap number\nEvaluate the assembly results based on the base substitution model and repeated resampling",

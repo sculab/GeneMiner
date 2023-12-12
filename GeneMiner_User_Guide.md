@@ -296,7 +296,8 @@ Advanced option:
   -max                The maximum length of contigs to be retained [default = 5000]
   -min                The minimum length of contigs to be retained [default = 300]
   -t , --thread       Number of threads [default = 'auto']
-  -b , --boundary     The length of the extension along both sides of the target sequence [default = 75]
+  -b , --boundary     The length of the extension along both sides of the target sequence [default = 0]
+  -rfi, --re_filter   Enable (1) or disable (0) re-filtering. [default = 1]
   -bn , --bootstrap   Number of resampling based on base substitution model
 ```
 
@@ -373,7 +374,7 @@ Advanced option:
 
 - `-t , --thread`: Specify the number of threads, if not specified, GeneMiner will automatically select the appropriate number of threads based on computer performance. default=`auto`
 
-- `-b , --boundary` : The length of the extension along both sides of the target sequence (length of `soft boundary`).When extending along both sides of the recovered target sequence, the accuracy of the bases gradually decreases as the extension length increases.However, the decrease in accuracy is not precipitous, but a gradual decline within a buffer of some certain length. We will keep the buffer and call this buffer  `soft boundary`. Recommended length is 0.5 * reads length.`-b` takes a range of values from 0 to 200 bp,default =75 bp
+- `-b , --boundary` : The length of the extension along both sides of the target sequence (length of `soft boundary`).When extending along both sides of the recovered target sequence, the accuracy of the bases gradually decreases as the extension length increases.However, the decrease in accuracy is not precipitous, but a gradual decline within a buffer of some certain length. We will keep the buffer and call this buffer  `soft boundary`. Recommended length is 0.5 * reads length.`-b` takes a range of values from 0 to 200 bp,default =0 bp
 
   **NOTE**: `-b` only takes effect when the user uses the `-rtgb` .
 
@@ -395,7 +396,7 @@ The output directory contains the`reference_database`, `filtered_out`, `assemble
 
 ### 4.3.2 filtered_out
 
-`filtered_out`  \<folder\>: Used to store filtered datasets. GeneMiner search the raw sequencing data based on the reference dataset and assign the reads that are highly matched with the reference sequence to the filtered dataset of a specific target sequence (`specific filtered dataset`). If the file size of `specific filtered dataset` exceeds 10MB, GeneMiner will save it in `big_reads` and refilter.
+`filtered_out`  \<folder\>: Used to store filtered datasets. GeneMiner search the raw sequencing data based on the reference dataset and assign the reads that are highly matched with the reference sequence to the filtered dataset of a specific target sequence (`specific filtered dataset`). If the file size of `specific filtered dataset` exceeds 10MB, GeneMiner will save it in `big_reads` and re-filter.
 
 ### 4.3.3 assembled_out
 

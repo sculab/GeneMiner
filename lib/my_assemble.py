@@ -1671,7 +1671,7 @@ if __name__ == '__main__':
 
     pars.add_argument("-b", "--boundary", dest="soft_boundary",
                       help="Length of the extension along both sides of the target gene [default = 75]",
-                      default=75, type=int, metavar="")
+                      default=0, type=int, metavar="")
     pars.add_argument("-change_seed", metavar="", dest="change_seed", type=int,
                       help='''Times of changing seed [default=32]''', required=False,
                       default=32)

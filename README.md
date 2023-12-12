@@ -177,14 +177,16 @@ geneminer.py -1 skimming_data1.fq.gz  -2 skimming_data2.fq.gz -rtfa shallow_ref/
 - Mining Angiosperms353 genes from  transcriptome data
 
 ```shell
-geneminer.py -1 Arabidopsis_thaliana_sim1.fq.gz -2 Arabidopsis_thaliana_sim2.fq.gz -rtfa ref_Arabidopsis_353 -k1 31 -k2 41 -t 4 -limit_count auto -b 10000 -o Angiosperm353
+geneminer.py -1 Arabidopsis_thaliana_sim1.fq.gz -2 Arabidopsis_thaliana_sim2.fq.gz -rtfa ref_Arabidopsis_353 -k1 31 -k2 41 -t 4 -rfi 1 -limit_count auto -b 10000 -o Angiosperm353 
 ```
 
 `k1`:  Length of kmer for filtering reads [default = 31]
 
 `k2`:  Length of kmer for assembling reads [default = 41]
 
-`-b`:  Length of the extension along both sides of the recovered target gene. Set to a large value (e.g. 10000) if you want to retain  		 the complete assembly. Recommended length is 0.5 * reads length [default = 75]
+`rfi`: Enable (1) or disable (0) re-filtering [default = 1].
+
+`-b`:  Length of the extension along both sides of the recovered target gene. Set to a large value (e.g. 10000) if you want to retain the complete assembly. Recommended length is 0.5 * reads length [default = 75]
 
 
 

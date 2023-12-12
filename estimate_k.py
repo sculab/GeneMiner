@@ -33,8 +33,8 @@ def estimate_k(p, v, l):
 
 # Set up argument parsing
 parser = argparse.ArgumentParser(description="Estimate the most likely value of k given p, v, and l. For instance: python estimate_k.py 0.99 0.1 150")
-parser.add_argument("p", type=float, help="Expected recall rate of reads. A real number between 0 and 1.")
-parser.add_argument("v", type=float, help="Mutation rate of the reference sequence relative to the target sequence. A real number between 0 and 1.")
+parser.add_argument("p", type=float, help="Expected acquisition rate of reads. A real number between 0 and 1.")
+parser.add_argument("v", type=float, help="Degree of variation between reference sequences and the target sequence. A real number between 0 and 1.")
 parser.add_argument("l", type=int, help="Reads length. An integer between 50 and 500.")
 
 # Parse arguments

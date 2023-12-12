@@ -83,6 +83,7 @@ def main(args):
 
     change_seed = args.change_seed
     soft_boundary = args.soft_boundary
+    re_filter = args.re_filter
     max_length = args.max
     min_length = args.min
     data_size = args.data_size
@@ -143,6 +144,7 @@ def main(args):
                  "data1": data1, "data2": data2, "single": single,
                  "reference (fa)": target_reference_fa, "reference (gb)": target_reference_gb,
                  "k1": k1, "k2": k2, "threads": thread_number,
+                 "re-filtering": re_filter,
                  "step length": step_length,
                  "limit count": limit_count,
                  "limit min ratio": limit_min_length,
@@ -157,6 +159,7 @@ def main(args):
                                  "data1": data1, "data2": data2, "single": single,
                                  "rtfa": target_reference_fa, "rtgb": target_reference_gb,
                                  "k1": k1, "k2": k2, "thread_number": thread_number,
+                                 "re_filter": re_filter,
                                  "step_length": step_length,
                                  "limit_count": limit_count,
                                  "limit_min_length": limit_min_length,  # limit_min_ratio
@@ -211,7 +214,7 @@ def main(args):
 
 if __name__ == "__main__":
     # signal.signal(signal.SIGINT, signal_handler)  # 检测函数终止退出（ctrl+c） #必须放在主程序中
-    # multiprocessing.freeze_support()  # windows上Pyinstaller打包多进程程序需要添加特殊指令
+    multiprocessing.freeze_support()  # windows上Pyinstaller打包多进程程序需要添加特殊指令
     # set_value("my_gui_flag", 0)  # 用于判定脚本是否跑完，还可以防止run双击覆盖事件
     parser = argparse.ArgumentParser(usage="%(prog)s <-1 -2|-s>  <-rtfa|-rtgb>  <-o>  [options]",
                                      description="GeneMiner: a tool for extracting phylogenetic markers from next-generation sequencing data\n"
@@ -291,7 +294,11 @@ if __name__ == "__main__":
                                        default="auto", metavar="")
     advanced_option_group.add_argument("-b", "--boundary", dest="soft_boundary",
                                        help="Length of the extension along both sides of the recovered target gene\nSet to a large value (e.g. 10000) if you want to retain the complete assembly\nRecommended length is 0.5 * reads length [default = 75]",
-                                       default=75, type=int, metavar="")
+                                       default=0, type=int, metavar="")
+    
+    advanced_option_group.add_argument("-rfi", "--re_filter", dest="re-filtering",
+                                       help="Enable (1) or disable (0) re-filtering. [default = 1]",
+                                       default=1, type=int, metavar="")
 
     advanced_option_group.add_argument("-bn", "--bootstrap", dest="bootstrap_number", type=int,
                                        help="Specify the bootstrap number\nEvaluate the assembly results based on the base substitution model and repeated resampling",
