@@ -288,7 +288,7 @@ Advanced option:
   -k2 , --kmer2       Specify the length of the k-mer to assemble reads   [default = 41]
   -d , --data         Specifies the number of reads to reduce raw data. If you want to use all the data, you can set as 'all' 						  [default = 'all']
   -step_length        Step length of the sliding window on the reads [default = 4]
-  -limit_count        limit of kmer count [default=auto]
+  -limit_count        limit of kmer count [default=2]
   -limit_min_ratio    The minimum ratio of contig length to reference average length [default = 1.0]
   -limit_max_ratio    The maximum ratio of contig length to reference average length [default = 2.0]
   -change_seed        Times of changing seed [default = 32]
@@ -358,7 +358,7 @@ Advanced option:
 
 
 
-- `-limit_count`: limit of k-mer count. This parameter is used to remove erroneous, low quality k-mers.During the assembly process, GeneMiner will split the filtered reads into subsequences (k-mers) of length `k1` and count the number of occurrences of these k-mers. The k-mers whose frequency is below the `limit_count`) will be removed.Users can either set a uniform `-limit_count` or choose the `-auto` mode. In `auto` mode, GeneMiner will assign a reasonable `-limit_count` to each target sequence based on the k-mers frequency distribution .default=`auto`
+- `-limit_count`: limit of k-mer count. This parameter is used to remove erroneous, low quality k-mers.During the assembly process, GeneMiner will split the filtered reads into subsequences (k-mers) of length `k1` and count the number of occurrences of these k-mers. The k-mers whose frequency is below the `limit_count`) will be removed.Users can either set a uniform `-limit_count` or choose the `-auto` mode. In `auto` mode, GeneMiner will assign a reasonable `-limit_count` to each target sequence based on the k-mers frequency distribution .default=`2`
 
 - `-limit_min_ratio`: The minimum ratio of the recovered target sequence compared to the average length of the reference sequence. During the assembly process, GeneMiner discards sequences with ratios smaller than `limit_min_ratio`
 

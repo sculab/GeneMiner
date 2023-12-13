@@ -157,16 +157,14 @@ geneminer.py -1 skimming_data1.fq.gz -2 skimming_data2.fq.gz -rtgb shallow_ref.g
 - Mining multiple target genes from genome skimming data and evaluating the assembly results.
 
 ```shell
-geneminer.py -1 skimming_data1.fq.gz  -2 skimming_data2.fq.gz -rtfa shallow_ref/ -min 300 -max 5000 -limit_count auto -t 4 -bn 20 -o out3
+geneminer.py -1 skimming_data1.fq.gz  -2 skimming_data2.fq.gz -rtfa shallow_ref/ -min 300 -max 5000 -t 4 -bn 20 -o out3
 ```
 
 `min`: The minimum length of recovered target genes to be retained [default = 0]
 
 `max`: The maximum length of recovered target genes to be retained [default = 5000]
 
-`limit_count`: The minimum number of times a k-mer should appear in reads, used to remove likely erroneous and 
-
-​                          low-abundance k-mers [default = auto]
+`limit_count`: The minimum number of times a k-mer should appear in reads, used to remove likely erroneous and low-abundance k-mers [default = 2]
 
 `-t`:   The number of threads
 
@@ -177,7 +175,7 @@ geneminer.py -1 skimming_data1.fq.gz  -2 skimming_data2.fq.gz -rtfa shallow_ref/
 - Mining Angiosperms353 genes from  transcriptome data
 
 ```shell
-geneminer.py -1 Arabidopsis_thaliana_sim1.fq.gz -2 Arabidopsis_thaliana_sim2.fq.gz -rtfa ref_Arabidopsis_353 -k1 31 -k2 41 -t 4 -rfi 1 -limit_count auto -b 10000 -o Angiosperm353 
+geneminer.py -1 Arabidopsis_thaliana_sim1.fq.gz -2 Arabidopsis_thaliana_sim2.fq.gz -rtfa ref_Arabidopsis_353 -k1 31 -k2 41 -t 4 -rfi 1 -b 10000 -o Angiosperm353 
 ```
 
 `k1`:  Length of kmer for filtering reads [default = 31]

@@ -268,7 +268,7 @@ if __name__ == "__main__":
                                        help="Length of the interval when splitting the reads into k-mers [default = 4]", default=4)
     advanced_option_group.add_argument('-limit_count', metavar='', dest='limit_count',
                                        help='''The minimum number of times a k-mer should appear in reads,\nused to remove likely erroneous and low-abundance k-mers [default = auto]''', required=False,
-                                       default='auto')
+                                       default='2')
     advanced_option_group.add_argument('-limit_min_ratio', metavar='', dest='limit_min_length', type=float,
                                        help='''Minimum ratio of the recovered target gene(s) to the reference's average length [default = 0.9]''',
                                        required=False, default=0.9)

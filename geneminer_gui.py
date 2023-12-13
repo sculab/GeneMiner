@@ -300,7 +300,7 @@ def geneminer_GUI():
             sg.Input(41, key='-k2-', size=(6, 1), font=("Arial", 12), expand_x=False,
                      tooltip="Length of kmer for assembling reads [default = 41]"),
             sg.Text('Limit:', size=(8, 1), justification='right', font=("Arial", 12)),
-            sg.Input('auto', key='-limit-', size=(6, 1), font=("Arial", 12), expand_x=False,
+            sg.Input('2', key='-limit-', size=(6, 1), font=("Arial", 12), expand_x=False,
                      tooltip="The minimum number of times a k-mer should appear in reads,\nused to remove likely erroneous and low-abundance k-mers [default = auto]"),
             sg.Text('Seed:', size=(8, 1), justification='right', font=("Arial", 12)),
             sg.Input(32, key='-seed-', size=(6, 1), font=("Arial", 12), expand_x=False,
