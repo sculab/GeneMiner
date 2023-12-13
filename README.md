@@ -22,7 +22,7 @@ Users on Windows, macOS, and Linux can run GeneMiner directly from the command l
 
 For individuals who are not accustomed to utilizing the command line, we advise using the GUI version. 
 
-For windows: Download the corresponding version of the packaged GUI from [here](https://github.com/sculab/Geneminer/releases/latest) and double-click to run it.
+We have specifically developed a graphical interface version, **EasyMiner**, for **Windows**. Please visit: [GitHub](https://github.com/sculab/EasyMiner) or [Gitee](https://gitee.com/sculab/EasyMiner).
 
 For macOS: 
 ```shell
@@ -37,18 +37,26 @@ python geneminer_gui.py
 
 ## 2.2 GeneMiner with command (cmd)
 
-- option1  **Cloning the GitHub repository**
+- option1  **Cloning the GitHub/Gitee repository**
 - option2  **Source code installation**
 - option3  **Flexible construction**
 
 
 
-**Cloning the GitHub repository**  (support)
+**Cloning the GitHub repository** 
 
-Clone GeneMiner's repository directly and build it as below:
+Clone GeneMiner's repository from github or gitee:
 
-```shell
+```
 git clone https://github.com/sculab/GeneMiner.git
+```
+or
+
+```
+git clone https://gitee.com/sculab/GeneMiner.git
+```
+
+```
 cd GeneMiner
 python setup.py install --record logName --user #Add 'geneminer.py' to the '$PATH' 
 geneminer.py -h
@@ -64,7 +72,7 @@ cat logName | xargs rm -rf
 
 **Source code installation**
 
- Download the source distribution from the [release](https://github.com/sculab/Geneminer/releases/latest) and  install dependencies:
+ Download the source distribution from the [Github](https://github.com/sculab/Geneminer/releases/latest) and install dependencies:
 
 ```shell
 wget -c https://github.com/sculab/GeneMiner/archive/refs/tags/geneminer_v1.1.tar.gz
@@ -86,7 +94,7 @@ cat logName | xargs rm -rf
 
 If both of the above methods fail or you want to have a deeper control of GeneMiner, you can use a more flexible method.
 
-- Download the GeneMiner's distribution from  [here](https://github.com/sculab/Geneminer/releases/latest).
+- Download the GeneMiner's distribution from [Github](https://github.com/sculab/Geneminer/releases/latest) or [Gitee].
 
 ```shell
 wget -c https://github.com/sculab/GeneMiner/archive/refs/tags/geneminer_v1.1.tar.gz
@@ -119,8 +127,7 @@ geneminer.py -h
 
 # 3. Running GeneMiner
 
-GeneMiner takes the reference sequences and FASTQ format sequencing files as input and the recovered phylogenetic markers as output. We have prepared a simulated dataset of `Arabidopsis thaliana` to help you quickly grasp the main usage of GeneMiner. The file were included in **DEMO** folder.
-
+GeneMiner takes the reference sequences and FASTQ format sequencing files as input and the recovered phylogenetic markers as output. We have prepared a simulated dataset of `Arabidopsis thaliana` to help you quickly grasp the main usage of GeneMiner. This dataset can be found in the **DEMO** folder.
 
 
 ## 3.1 Running GeneMiner command-line
