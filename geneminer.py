@@ -296,7 +296,7 @@ if __name__ == "__main__":
                                        help="Length of the extension along both sides of the recovered target gene\nSet to a large value (e.g. 10000) if you want to retain the complete assembly\nRecommended length is 0.5 * reads length [default = 75]",
                                        default=0, type=int, metavar="")
     
-    advanced_option_group.add_argument("-rfi", "--re_filter", dest="re-filtering",
+    advanced_option_group.add_argument("-rfi", "--re_filter", dest="re_filter",
                                        help="Enable (1) or disable (0) re-filtering. [default = 1]",
                                        default=1, type=int, metavar="")
 

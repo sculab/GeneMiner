@@ -48,6 +48,7 @@ class CorePipeLine():
         self.thread_number=configuration_information["thread_number"]
         self.quiet=configuration_information["quiet"]
         self.soft_boundary=configuration_information["soft_boundary"]
+        self.re_filter=configuration_information["re_filter"]
 
 
         self.reference_database=configuration_information["reference_database"]
@@ -78,13 +79,14 @@ class CorePipeLine():
         thread_number = self.thread_number
         data_size=self.data_size
         quiet=self.quiet
+        re_filter = self.re_filter
 
         filter_configuration_information={
             "data1":data1,"data2":data2,"single":single,
             "thread_number":thread_number,"k1":k1,
             "out":filtered_out_path,"step_length":step_length,
             "reference":reference_database_path,"data_size":data_size,
-            "quiet":quiet
+            "quiet":quiet,"re_filter":re_filter
         }
         my_filter_main(filter_configuration_information)
 
@@ -103,6 +105,7 @@ class CorePipeLine():
         out_dir = self.out_dir
         quiet=self.quiet
         soft_boundary=self.soft_boundary
+        re_filter=self.re_filter
 
 
         files = get_file_list(filtered_out_path)

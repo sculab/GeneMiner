@@ -80,6 +80,7 @@ def main(args):
 
     change_seed = args.change_seed
     soft_boundary = args.soft_boundary
+    re_filter = args.re_filter
     max_length = args.max
     min_length = args.min
     data_size = args.data_size
@@ -163,6 +164,7 @@ def main(args):
                                  "change_seed": change_seed,
                                  "max_length": max_length, "min_length": min_length,
                                  "soft_boundary": soft_boundary, "data_size": data_size,
+                                 "re_filter":re_filter,
                                  "bootstrap": bootstrap_information[0], "bootstrap_number": bootstrap_information[1],
                                  "reference_database": reference_database,
                                  "filtered_out": filtered_out, "assembled_out": assembled_out,
@@ -631,6 +633,7 @@ def geneminer_GUI():
             args.bootstrap_number=10
             #others
             args.soft_boundary = 0
+            args.re_filter = 1
             args.min = 0
             args.max = 5000
             args.limit_max_length=0.9
@@ -737,7 +740,7 @@ if __name__ == "__main__":
                                        help="Length of the extension along both sides of the recovered target gene\nSet to a large value (e.g. 10000) if you want to retain the complete assembly\nRecommended length is 0.5 * reads length [default = 75]",
                                        default=0, type=int, metavar="")
 
-    advanced_option_group.add_argument("-rfi", "--re_filter", dest="re-filtering",
+    advanced_option_group.add_argument("-rfi", "--re_filter", dest="re_filter",
                                        help="Enable (1) or disable (0) re-filtering. [default = 1]",
                                        default=1, type=int, metavar="")
 
