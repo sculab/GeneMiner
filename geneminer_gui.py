@@ -581,7 +581,7 @@ def geneminer_GUI():
             window['-o-'].update("")
             # 高级参数部分
             #filter
-            window['-k1-'].update(31")
+            window['-k1-'].update("31")
             window['-n-'].update('all')
             window['-step-'].update('4')
             #assemble
