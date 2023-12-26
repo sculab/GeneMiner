@@ -5,13 +5,13 @@ GeneMiner is a software for extracting phylogenetic markers from next-generation
 
 **Cite:** Pulin Xie, Yongling Guo, Yue Teng, Wenbin Zhou, Yan Yu. 2024. GeneMiner: a tool for extracting phylogenetic markers from next-generation sequencing data. Molecular Ecology Resources. DOI: 10.1111/1755-0998.13924
 
-**NOTE:** We have specifically developed a enhanced graphical interface version, **EasyMiner**, for **Windows**. Please visit EasyMiner on [GitHub](https://github.com/sculab/EasyMiner) or [Gitee](https://gitee.com/sculab/EasyMiner) for details.
+**NOTE:** We have specifically developed a enhanced graphical interface version, **EasyMiner**, for **Windows** and **macOS (developing)**. Please visit EasyMiner on [GitHub](https://github.com/sculab/EasyMiner) or [Gitee](https://gitee.com/sculab/EasyMiner) for details.
 
 For lightweight usage on **macOS**, you may also refer to Section 3.2, 'Running GeneMiner-GUI'.
 
 ## Dependencies
 
-- [Python](https://www.python.org/downloads/) 3.6 or later, along with the Python libraries.
+- [Python](https://www.python.org/downloads/) 3.6 or later, along with the Pysthon libraries.
 
 - [biopython](http://biopython.org/wiki/Main_Page) 1.79 or later
 
