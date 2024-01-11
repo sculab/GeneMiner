@@ -6,9 +6,7 @@
 GeneMiner is a software for extracting phylogenetic markers from next-generation sequencing (NGS) data. (i) With GeneMiner, users can accurately and efficiently obtain a large number of phylogenetic markers  from NGS data at an economical cost. For example, extract all or part of mitochondrial/chloroplast genes and highly repetitive regions (e.g., nrDNA) in the nuclear genome from genome skimming data. Extract single-to-low-copy genes from transcriptome sequencing data, etc. GeneMiner broadens the choice of phylogenetic markers from the most basic data level. (ii) GeneMiner proposes a novel verification method based on the base substitution model and repetitive resampling, which can statistically evaluate the impact of the reference on the assembly. (iii) GeneMiner provides a cross-platform graphical interface and can be easily docked to downstream phylogenetic analysis processes. In addition, GeneMiner can be applied to the research of DNA barcode extraction, customs quarantine, specific functional gene exploration, and other research, which has broad application prospects.
 
 ## **Cite** 
-Pulin Xie, Yongling Guo, Yue Teng, Wenbin Zhou, Yan Yu. 2024. GeneMiner: a tool for extracting phylogenetic markers from next-generation sequencing data. Molecular Ecology Resources. DOI: 10.1111/1755-0998.13924
-
-**NOTE:** We have specifically developed a enhanced graphical interface version, **EasyMiner**, for **Windows** and **macOS (developing)**. Please visit EasyMiner on [GitHub](https://github.com/sculab/EasyMiner) or [Gitee](https://gitee.com/sculab/EasyMiner) for details.
+Pulin Xie, Yongling Guo, Yue Teng, Wenbin Zhou, Yan Yu. 2024. GeneMiner: a tool for extracting phylogenetic markers from next-generation sequencing data. Molecular Ecology Resources. [DOI: 10.1111/1755-0998.13924](https://onlinelibrary.wiley.com/doi/10.1111/1755-0998.13924)
 
 For lightweight usage on **macOS**, you may also refer to Section 3.2, 'Running GeneMiner-GUI'.
 
@@ -29,7 +27,7 @@ Users on Windows, macOS, and Linux can run GeneMiner directly from the command l
 ## 2.1 GeneMiner with Graphical User Interface (GUI)
 
 For individuals who are not accustomed to utilizing the command line, we advise using the GUI version. 
-We have specifically developed a enhanced **GeneMiner2**, for **Windows**. Please visit: [GitHub](https://github.com/sculab/EasyMiner) or [Gitee](https://gitee.com/sculab/EasyMiner) for details.
+We have specifically developed a enhanced **GeneMiner2**, for **Windows**. Please visit: [GitHub](https://github.com/sculab/GeneMiner2) or [Gitee](https://gitee.com/sculab/GeneMiner2) for details.
 
 ## 2.2 GeneMiner with command (cmd)
 
