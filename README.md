@@ -27,7 +27,7 @@ Users on Windows, macOS, and Linux can run GeneMiner directly from the command l
 ## 2.1 GeneMiner with Graphical User Interface (GUI)
 
 For individuals who are not accustomed to utilizing the command line, we advise using the GUI version. 
-We have specifically developed a enhanced **GeneMiner2**, for **Windows**. Please visit: [GitHub](https://github.com/sculab/GeneMiner2) or [Gitee](https://gitee.com/sculab/GeneMiner2) for details.
+We have specifically developed a enhanced **GeneMiner2**, for **Windows** and **macOS**. Please visit: [GitHub](https://github.com/sculab/GeneMiner2) or [Gitee](https://gitee.com/sculab/GeneMiner2) for details.
 
 ## 2.2 GeneMiner with command (cmd)
 
