@@ -1008,7 +1008,7 @@ if __name__ == '__main__':
     pars.add_argument("-r", "--reference", metavar="", dest="reference", type=str, help="references", required=True)
     pars.add_argument("-d", "--data", metavar="", dest="data_size", help="data size", default='all')
     pars.add_argument("-quiet", dest="quiet", help="Do not write progress messages to stderr", default=False,action='store_true')
-
+    pars.add_argument("-rfi", "--re_filter", dest="re_filter",help="Enable (1) or disable (0) re-filtering. [default = 1]", default=1, type=int, metavar="")
     args = pars.parse_args()
 
     # 初始化操作
@@ -1022,14 +1022,16 @@ if __name__ == '__main__':
     reference = get_absolute(args.reference)
     data_size = args.data_size
     quiet=args.quiet
-
+    re_filter=args.re_filter
+    
 
     filter_configuration_information = {"data1": data1, "data2": data2, "single": single,
                                         "thread_number": thread_number, "k1": k1,
                                         "out": out_dir,
                                         "step_length": step_length,
                                         "reference": reference, "data_size": data_size,
-                                        "quiet":quiet
+                                        "quiet":quiet,
+                                        "re_filter":re_filter
                                         }
 
     my_filter_main(filter_configuration_information)

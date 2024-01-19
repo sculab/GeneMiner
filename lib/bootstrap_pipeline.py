@@ -364,7 +364,8 @@ class BootstrapPipeLine():
             "thread_number": thread_number, "k1": k1,
             "out": boostrap_out_filtered_out_path, "step_length": step_length,
             "reference": boostrap_out_reference_database_path, "data_size": data_size,
-            "quiet":quiet
+            "quiet":quiet,
+            "re_filter":"1"
         }
         my_filter_main(filter_configuration_information)
 
