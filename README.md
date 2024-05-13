@@ -252,7 +252,7 @@ The output directory contains  `reference_database`、`filtered_out `、`assembl
 
 # 4. User manual
 
-A more complete manual is here: https://github.com/sculab/GeneMiner/blob/main/GeneMiner_User_Guide.pdf
+A more complete manual is here: https://github.com/sculab/GeneMiner/blob/main/GeneMiner_User_Guide.md
 
 # 5. Contact
 
